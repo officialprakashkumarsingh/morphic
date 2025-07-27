@@ -69,7 +69,7 @@ export function PWAInstall() {
       setIsInstalled(true)
       setShowInstallPrompt(false)
       setDeferredPrompt(null)
-      console.log('Flight Tracker PWA was installed')
+      console.log('AhamAI PWA was installed')
     }
 
     if (typeof window !== 'undefined') {
@@ -130,7 +130,7 @@ export function PWAInstall() {
           
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-medium text-blue-900">
-              Install Flight Tracker
+              Install AhamAI
             </h3>
             <p className="text-xs text-blue-700 mt-1">
               Add to your home screen for the best experience. Fast, offline-ready, and feels like a native app!

@@ -3,7 +3,6 @@ import { CoreMessage, smoothStream, streamText } from 'ai'
 import { createCryptoTool } from '../tools/crypto'
 import { createDiagramTool } from '../tools/diagram'
 import { createDocumentTool } from '../tools/document'
-import { createFlightTool } from '../tools/flight'
 import { createPresentationTool } from '../tools/presentation'
 import { createQuestionTool } from '../tools/question'
 import { retrieveTool } from '../tools/retrieve'
@@ -73,7 +72,7 @@ export function researcher({
     const screenshotTool = createScreenshotTool(model)
     const stockTool = createStockTool()
   const cryptoTool = createCryptoTool()
-  const flightTool = createFlightTool()
+
   const documentTool = createDocumentTool()
 
     return {
@@ -90,12 +89,12 @@ export function researcher({
                   screenshot: screenshotTool,
           stock: stockTool,
           crypto: cryptoTool,
-          flight: flightTool,
+  
           document: documentTool
       },
               experimental_activeTools: searchMode
-          ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram', 'presentation', 'screenshot', 'stock', 'crypto', 'flight', 'document']
-          : ['diagram', 'presentation', 'screenshot', 'stock', 'crypto', 'flight', 'document'],
+          ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram', 'presentation', 'screenshot', 'stock', 'crypto', 'document']
+          : ['diagram', 'presentation', 'screenshot', 'stock', 'crypto', 'document'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()
     }

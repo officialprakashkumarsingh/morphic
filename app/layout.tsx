@@ -22,9 +22,9 @@ const fontSans = FontSans({
   variable: '--font-sans'
 })
 
-const title = 'Flight Tracker Pro - Morphic'
+const title = 'AhamAI - Morphic'
 const description =
-  'Real-time flight tracking with live status, route mapping, and aircraft details. A fully open-source AI-powered flight tracking application.'
+  'Your intelligent AI assistant with comprehensive tools and capabilities. A fully open-source AI-powered assistant application.'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://morphic.sh'),
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Flight Tracker Pro',
+    title: 'AhamAI',
     startupImage: [
       {
         url: '/icons/icon-512x512.png',
@@ -53,8 +53,8 @@ export const metadata: Metadata = {
       }
     ]
   },
-  applicationName: 'Flight Tracker Pro',
-  keywords: ['flight', 'tracker', 'aviation', 'real-time', 'aircraft', 'airport', 'travel'],
+      applicationName: 'AhamAI',
+    keywords: ['AI', 'assistant', 'intelligent', 'tools', 'productivity', 'analysis'],
   category: 'travel'
 }
 
@@ -93,10 +93,10 @@ export default async function RootLayout({
       <head>
         {/* PWA Meta Tags */}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="application-name" content="Flight Tracker Pro" />
+        <meta name="application-name" content="AhamAI" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Flight Tracker Pro" />
+        <meta name="apple-mobile-web-app-title" content="AhamAI" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#3b82f6" />
         <meta name="msapplication-tap-highlight" content="no" />
@@ -135,9 +135,9 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <SidebarProvider defaultOpen>
+            <Header user={user} />
             <AppSidebar />
             <div className="flex flex-col flex-1 min-w-0">
-              <Header user={user} />
               <main className="flex flex-1 min-h-0 overflow-hidden pt-12">
                 <div className="flex-1 flex flex-col min-w-0">
                   <ArtifactRoot>{children}</ArtifactRoot>
@@ -183,7 +183,7 @@ export default async function RootLayout({
                 // Handle service worker messages
                 navigator.serviceWorker.addEventListener('message', event => {
                   if (event.data.type === 'SYNC_COMPLETED') {
-                    console.log('Flight data synced:', event.data.message);
+                    console.log('Data synced:', event.data.message);
                   }
                 });
               }
@@ -213,7 +213,7 @@ export default async function RootLayout({
               
               // Handle app installed
               window.addEventListener('appinstalled', (evt) => {
-                console.log('Flight Tracker PWA was installed');
+                console.log('AhamAI PWA was installed');
               });
               
               // Performance optimizations

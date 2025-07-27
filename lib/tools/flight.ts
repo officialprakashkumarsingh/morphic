@@ -74,20 +74,7 @@ export function createFlightTool() {
 // Fetch flight status with multiple fallback APIs
 async function fetchFlightStatus(flightNumber: string, date: string) {
   const methods = [
-    // Method 1: FlightAware API (public endpoints)
-    async () => {
-      const airlineCode = flightNumber.slice(0, 2)
-      const flightNum = flightNumber.slice(2)
-      const response = await fetch(`https://flightaware.com/live/flight/${airlineCode}${flightNum}`)
-      
-      if (!response.ok) throw new Error(`FlightAware failed: ${response.status}`)
-      
-      // This would be HTML scraping in real implementation
-      // For demo, we'll use a structured mock based on airline patterns
-      return createMockFlightData(flightNumber, date)
-    },
-
-    // Method 2: OpenSky Network API (real but limited)
+    // Method 1: OpenSky Network API (real live data)
     async () => {
       const response = await fetch('https://opensky-network.org/api/states/all')
       if (!response.ok) throw new Error(`OpenSky failed: ${response.status}`)
@@ -99,23 +86,52 @@ async function fetchFlightStatus(flightNumber: string, date: string) {
         const callsign = state[1]?.trim()
         return callsign && (
           callsign.includes(flightNumber.slice(0, 2)) ||
-          callsign.includes(flightNumber.slice(2))
+          callsign.includes(flightNumber.slice(2)) ||
+          callsign === flightNumber
         )
       })
 
       if (aircraft) {
+        const airlineInfo = getAirlineInfo(flightNumber.slice(0, 2))
         return {
           flightNumber,
+          airline: airlineInfo.name,
+          airlineCode: flightNumber.slice(0, 2),
           status: 'In Flight',
-          aircraft: {
-            callsign: aircraft[1]?.trim(),
-            latitude: aircraft[6],
-            longitude: aircraft[5],
-            altitude: aircraft[7],
-            velocity: aircraft[9],
-            heading: aircraft[10],
-            lastSeen: new Date(aircraft[3] * 1000).toISOString()
+          progress: 50, // Mid-flight
+          departure: {
+            code: 'DEP',
+            name: 'Departure Airport',
+            city: 'Unknown',
+            country: 'Unknown',
+            timezone: 'UTC',
+            coordinates: { lat: 0, lon: 0 },
+            scheduledTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            estimatedTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            gate: 'Unknown',
+            terminal: 1
           },
+          arrival: {
+            code: 'ARR',
+            name: 'Arrival Airport',
+            city: 'Unknown',
+            country: 'Unknown',
+            timezone: 'UTC',
+            coordinates: { lat: 0, lon: 0 },
+            scheduledTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+            estimatedTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+            gate: 'Unknown',
+            terminal: 1
+          },
+          aircraft: {
+            currentPosition: { lat: aircraft[6], lon: aircraft[5] },
+            altitude: aircraft[7] || 0,
+            speed: aircraft[9] ? aircraft[9] * 3.6 : 0, // Convert m/s to km/h
+            heading: aircraft[10] || 0
+          },
+          delay: 0,
+          distance: 1000,
+          duration: 240,
           live: true
         }
       }
@@ -123,10 +139,59 @@ async function fetchFlightStatus(flightNumber: string, date: string) {
       throw new Error('Flight not found in OpenSky data')
     },
 
-    // Method 3: Generate realistic mock data based on airline patterns
+    // Method 2: AviationStack API (fallback)
     async () => {
-      console.log('Using enhanced mock flight data')
-      return createMockFlightData(flightNumber, date)
+      // Try alternative aviation API
+      const response = await fetch(`https://api.aviationstack.com/v1/flights?access_key=free&flight_iata=${flightNumber}`)
+      if (!response.ok) throw new Error(`AviationStack failed: ${response.status}`)
+      
+      const data = await response.json()
+      if (data.data && data.data.length > 0) {
+        const flight = data.data[0]
+        return {
+          flightNumber,
+          airline: flight.airline?.name || 'Unknown Airline',
+          airlineCode: flight.airline?.iata || flightNumber.slice(0, 2),
+          status: flight.flight_status || 'Unknown',
+          progress: 0,
+          departure: {
+            code: flight.departure?.iata || 'Unknown',
+            name: flight.departure?.airport || 'Unknown Airport',
+            city: flight.departure?.timezone || 'Unknown',
+            country: 'Unknown',
+            timezone: flight.departure?.timezone || 'UTC',
+            coordinates: { lat: 0, lon: 0 },
+            scheduledTime: flight.departure?.scheduled || new Date().toISOString(),
+            estimatedTime: flight.departure?.estimated || flight.departure?.scheduled || new Date().toISOString(),
+            gate: flight.departure?.gate || 'Unknown',
+            terminal: flight.departure?.terminal || 1
+          },
+          arrival: {
+            code: flight.arrival?.iata || 'Unknown',
+            name: flight.arrival?.airport || 'Unknown Airport',
+            city: flight.arrival?.timezone || 'Unknown',
+            country: 'Unknown',
+            timezone: flight.arrival?.timezone || 'UTC',
+            coordinates: { lat: 0, lon: 0 },
+            scheduledTime: flight.arrival?.scheduled || new Date().toISOString(),
+            estimatedTime: flight.arrival?.estimated || flight.arrival?.scheduled || new Date().toISOString(),
+            gate: flight.arrival?.gate || 'Unknown',
+            terminal: flight.arrival?.terminal || 1
+          },
+          aircraft: {
+            currentPosition: { lat: 0, lon: 0 },
+            altitude: 0,
+            speed: 0,
+            heading: 0
+          },
+          delay: flight.departure?.delay || 0,
+          distance: 1000,
+          duration: 240,
+          live: false
+        }
+      }
+      
+      throw new Error('Flight not found in AviationStack data')
     }
   ]
 
@@ -216,61 +281,7 @@ async function fetchWeatherData(flightNumber: string) {
   }
 }
 
-// Create realistic mock flight data based on airline patterns
-function createMockFlightData(flightNumber: string, date: string) {
-  const airlineCode = flightNumber.slice(0, 2)
-  const flightNum = flightNumber.slice(2)
-  
-  const airlines = getAirlineInfo(airlineCode)
-  const routes = getAirlineRoutes(airlineCode)
-  
-  // Generate realistic flight status
-  const statuses = ['On Time', 'Delayed', 'In Flight', 'Landed', 'Boarding']
-  const status = statuses[Math.floor(Math.random() * statuses.length)]
-  
-  const now = new Date()
-  const departureTime = new Date(now.getTime() + (Math.random() - 0.5) * 4 * 60 * 60 * 1000) // ±2 hours
-  const arrivalTime = new Date(departureTime.getTime() + routes.duration * 60 * 1000)
-  
-  // Generate realistic position if in flight
-  const progress = status === 'In Flight' ? Math.random() : (status === 'Landed' ? 1 : 0)
-  const lat = routes.departure.coordinates.lat + 
-    (routes.arrival.coordinates.lat - routes.departure.coordinates.lat) * progress
-  const lon = routes.departure.coordinates.lon + 
-    (routes.arrival.coordinates.lon - routes.departure.coordinates.lon) * progress
-  
-  return {
-    flightNumber,
-    airline: airlines.name,
-    airlineCode,
-    status,
-    progress: Math.round(progress * 100),
-    departure: {
-      ...routes.departure,
-      scheduledTime: departureTime.toISOString(),
-      estimatedTime: new Date(departureTime.getTime() + (Math.random() - 0.5) * 30 * 60 * 1000).toISOString(),
-      gate: `A${Math.floor(Math.random() * 50) + 1}`,
-      terminal: Math.floor(Math.random() * 3) + 1
-    },
-    arrival: {
-      ...routes.arrival,
-      scheduledTime: arrivalTime.toISOString(),
-      estimatedTime: new Date(arrivalTime.getTime() + (Math.random() - 0.5) * 30 * 60 * 1000).toISOString(),
-      gate: `B${Math.floor(Math.random() * 50) + 1}`,
-      terminal: Math.floor(Math.random() * 3) + 1
-    },
-    aircraft: {
-      currentPosition: { lat, lon },
-      altitude: status === 'In Flight' ? 35000 + Math.random() * 8000 : 0,
-      speed: status === 'In Flight' ? 800 + Math.random() * 100 : 0,
-      heading: Math.floor(Math.random() * 360)
-    },
-    delay: Math.floor((Math.random() - 0.7) * 60), // Usually on time, sometimes delayed
-    distance: routes.distance,
-    duration: routes.duration,
-    live: status === 'In Flight'
-  }
-}
+
 
 // Generate flight analysis
 function generateFlightAnalysis(flightData: any, routeData: any, aircraftData: any) {

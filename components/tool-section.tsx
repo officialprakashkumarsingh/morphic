@@ -5,6 +5,7 @@ import { ToolInvocation } from 'ai'
 import { ChartSection } from './chart-section'
 import { CryptoSection } from './crypto-section'
 import { DiagramSection } from './diagram-section'
+import { DocumentSection } from './document-section'
 import { FlightSection } from './flight-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
@@ -121,6 +122,10 @@ export function ToolSection({
     case 'flight':
       return (
         <FlightSection tool={tool} />
+      )
+    case 'document':
+      return (
+        <DocumentSection tool={tool} />
       )
     default:
       return null

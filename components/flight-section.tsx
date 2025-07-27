@@ -120,70 +120,77 @@ export function FlightSection({ tool }: FlightSectionProps) {
 
   // Create airplane sound effect
   useEffect(() => {
-    // Create a synthetic airplane sound using Web Audio API
-    const createAirplaneSound = () => {
-      if (typeof window === 'undefined') return null
-      
-      try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-        
-        // Create airplane engine sound
-        const createEngineSound = () => {
-          const oscillator1 = audioContext.createOscillator()
-          const oscillator2 = audioContext.createOscillator()
-          const gainNode = audioContext.createGain()
-          const filter = audioContext.createBiquadFilter()
-          
-          // Low frequency rumble (engine)
-          oscillator1.frequency.setValueAtTime(80, audioContext.currentTime)
-          oscillator1.type = 'sawtooth'
-          
-          // Higher frequency hum (air)
-          oscillator2.frequency.setValueAtTime(200, audioContext.currentTime)
-          oscillator2.type = 'sine'
-          
-          // Filter for more realistic sound
-          filter.type = 'lowpass'
-          filter.frequency.setValueAtTime(800, audioContext.currentTime)
-          
-          // Volume control
-          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime)
-          
-          // Connect the audio graph
-          oscillator1.connect(filter)
-          oscillator2.connect(filter)
-          filter.connect(gainNode)
-          gainNode.connect(audioContext.destination)
-          
-          return { oscillator1, oscillator2, gainNode, audioContext }
-        }
-        
-        return createEngineSound
-      } catch (e) {
-        console.log('Web Audio API not supported')
-        return null
-      }
+    if (typeof window === 'undefined' || !soundEnabled || !data?.status?.live) {
+      setIsPlaying(false)
+      return
     }
 
-    const soundGenerator = createAirplaneSound()
-    
-    if (soundGenerator && soundEnabled && data?.status?.live) {
-      const sound = soundGenerator()
-      if (sound) {
-        sound.oscillator1.start()
-        sound.oscillator2.start()
-        setIsPlaying(true)
-        
-        // Cleanup function
-        return () => {
-          try {
-            sound.oscillator1.stop()
-            sound.oscillator2.stop()
-            setIsPlaying(false)
-          } catch (e) {
-            // Oscillator already stopped
-          }
+    let audioContext: AudioContext | null = null
+    let oscillator1: OscillatorNode | null = null
+    let oscillator2: OscillatorNode | null = null
+    let gainNode: GainNode | null = null
+
+    try {
+      // Create audio context
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      
+      // Create oscillators and nodes
+      oscillator1 = audioContext.createOscillator()
+      oscillator2 = audioContext.createOscillator()
+      gainNode = audioContext.createGain()
+      const filter = audioContext.createBiquadFilter()
+      
+      // Configure low frequency rumble (engine)
+      oscillator1.frequency.setValueAtTime(80, audioContext.currentTime)
+      oscillator1.type = 'sawtooth'
+      
+      // Configure higher frequency hum (air)
+      oscillator2.frequency.setValueAtTime(200, audioContext.currentTime)
+      oscillator2.type = 'sine'
+      
+      // Configure filter for realistic sound
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(800, audioContext.currentTime)
+      
+      // Configure volume
+      gainNode.gain.setValueAtTime(0.05, audioContext.currentTime) // Reduced volume
+      
+      // Connect audio graph
+      oscillator1.connect(filter)
+      oscillator2.connect(filter)
+      filter.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      // Start oscillators
+      oscillator1.start()
+      oscillator2.start()
+      setIsPlaying(true)
+      
+    } catch (error) {
+      console.log('Web Audio API error:', error)
+      setIsPlaying(false)
+    }
+
+    // Cleanup function
+    return () => {
+      try {
+        if (oscillator1) {
+          oscillator1.stop()
+          oscillator1.disconnect()
         }
+        if (oscillator2) {
+          oscillator2.stop()
+          oscillator2.disconnect()
+        }
+        if (gainNode) {
+          gainNode.disconnect()
+        }
+        if (audioContext) {
+          audioContext.close()
+        }
+        setIsPlaying(false)
+      } catch (error) {
+        console.log('Audio cleanup error:', error)
       }
     }
   }, [soundEnabled, data?.status?.live])

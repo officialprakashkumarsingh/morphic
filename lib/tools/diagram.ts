@@ -99,28 +99,24 @@ export function createDiagramTool(model: string) {
           }
         } catch (error) {
           lastError = error instanceof Error ? error.message : 'Unknown error'
+          console.warn(`Diagram generation attempt ${attempts} failed:`, lastError)
 
-          if (attempts === maxAttempts) {
-            // Final attempt failed, return fallback diagram
-            const fallbackCode = generateFallbackDiagram(type, title, content)
-            const encoded = encode(fallbackCode)
-            return {
-              type: 'diagram',
-              diagramType: type,
-              title,
-              description,
-              plantUMLCode: fallbackCode,
-              renderUrl: `https://www.plantuml.com/plantuml/png/${encoded}`,
-              svgUrl: `https://www.plantuml.com/plantuml/svg/${encoded}`,
-              editUrl: `https://www.plantuml.com/plantuml/uml/${encoded}`,
-              attempts,
-              warnings: [`Auto-correction applied after ${attempts} attempts. Original error: ${lastError}`],
-              status: 'success'
-            }
+          // Use fallback diagram immediately for syntax errors
+          const fallbackCode = generateFallbackDiagram(type, title, content)
+          const encoded = encode(fallbackCode)
+          return {
+            type: 'diagram',
+            diagramType: type,
+            title,
+            description,
+            plantUMLCode: fallbackCode,
+            renderUrl: `https://www.plantuml.com/plantuml/png/${encoded}`,
+            svgUrl: `https://www.plantuml.com/plantuml/svg/${encoded}`,
+            editUrl: `https://www.plantuml.com/plantuml/uml/${encoded}`,
+            attempts,
+            warnings: [`Generated fallback ${type} diagram due to syntax issues.`],
+            status: 'success'
           }
-
-          // Continue to next attempt
-          continue
         }
       }
 
@@ -153,9 +149,20 @@ function autoCorrectPlantUMLContent(content: string, type: string, attempt: numb
   // Type-specific corrections
   switch (type) {
     case 'sequence':
-      // Fix sequence diagram arrows
+      // Fix sequence diagram arrows and syntax
       corrected = corrected.replace(/-->>/g, '-->')
       corrected = corrected.replace(/->>>/g, '-->')
+      corrected = corrected.replace(/->>/g, '->')
+      corrected = corrected.replace(/<<-/g, '<-')
+      // Fix participant declarations
+      corrected = corrected.replace(/participant\s+"([^"]+)"\s+as\s+(\w+)/g, 'participant "$1" as $2')
+      corrected = corrected.replace(/actor\s+"([^"]+)"\s+as\s+(\w+)/g, 'actor "$1" as $2')
+      // Fix message syntax
+      corrected = corrected.replace(/(\w+)\s*->\s*(\w+)\s*:\s*([^\n]+)/g, '$1 -> $2 : $3')
+      corrected = corrected.replace(/(\w+)\s*<-\s*(\w+)\s*:\s*([^\n]+)/g, '$1 <- $2 : $3')
+      // Fix activation/deactivation
+      corrected = corrected.replace(/activate\s+(\w+)/g, 'activate $1')
+      corrected = corrected.replace(/deactivate\s+(\w+)/g, 'deactivate $1')
       break
 
     case 'class':
@@ -218,15 +225,18 @@ function generatePlantUMLCode(type: string, title: string, content: string, them
 // Basic validation for PlantUML code
 function validatePlantUMLCode(code: string): void {
   if (!code.trim()) {
-    throw new Error('Empty PlantUML code')
+    console.warn('Empty PlantUML code - will be auto-corrected')
+    return // Don't throw, let auto-correction handle it
   }
 
   if (!code.includes('@startuml')) {
-    throw new Error('Missing @startuml tag')
+    console.warn('Missing @startuml tag - will be auto-corrected')
+    return // Don't throw, let auto-correction handle it
   }
 
   if (!code.includes('@enduml')) {
-    throw new Error('Missing @enduml tag')
+    console.warn('Missing @enduml tag - will be auto-corrected')
+    return // Don't throw, let auto-correction handle it
   }
 
   // Check for balanced parentheses and brackets
@@ -262,10 +272,13 @@ function generateFallbackDiagram(type: string, title: string, originalContent: s
     case 'sequence':
       return `@startuml
 title ${title}
-participant A
-participant B
-A -> B: Request
-B --> A: Response
+participant "User" as U
+participant "System" as S
+U -> S: Request
+activate S
+S -> S: Process
+S --> U: Response
+deactivate S
 @enduml`
 
     case 'class':

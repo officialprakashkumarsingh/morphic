@@ -52,8 +52,17 @@ const CHART_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#8dd1e1', '#d
 export function ChartSection({ tool, isOpen, onOpenChange }: ChartSectionProps) {
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie' | 'area'>('bar')
 
-  const data: ChartResult | undefined =
-    tool.state === 'result' && tool.result ? JSON.parse(tool.result) : undefined
+  const data: ChartResult | undefined = (() => {
+    try {
+      return tool.state === 'result' && tool.result ? JSON.parse(tool.result) : undefined
+    } catch (error) {
+      console.error('Failed to parse chart data:', error)
+      return {
+        type: 'error',
+        error: 'Failed to parse chart data. Please try again with valid data.'
+      }
+    }
+  })()
 
   const downloadChart = () => {
     // Create SVG element for download
@@ -80,11 +89,28 @@ export function ChartSection({ tool, isOpen, onOpenChange }: ChartSectionProps) 
   }
 
   const renderChart = (type: 'bar' | 'line' | 'pie' | 'area') => {
-    if (!data?.data) return null
+    if (!data?.data || !Array.isArray(data.data) || data.data.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
+          <p>No valid chart data available</p>
+        </div>
+      )
+    }
 
     const chartData = data.data
-    const xKey = data.xKey || Object.keys(chartData[0] || {})[0]
-    const dataKeys = data.dataKeys || Object.keys(chartData[0] || {}).filter(key => key !== xKey)
+    const firstItem = chartData[0] || {}
+    const allKeys = Object.keys(firstItem)
+    
+    if (allKeys.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
+          <p>Chart data is empty</p>
+        </div>
+      )
+    }
+
+    const xKey = data.xKey || allKeys[0]
+    const dataKeys = data.dataKeys || allKeys.filter(key => key !== xKey)
 
     switch (type) {
       case 'bar':

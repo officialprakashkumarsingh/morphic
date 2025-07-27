@@ -163,29 +163,47 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
             const canvas = await html2canvas.default(slide, {
               width: 595,
               height: 842,
-              scale: 1,
+              scale: 2,
               useCORS: true,
-              allowTaint: false,
+              allowTaint: true,
               backgroundColor: '#ffffff',
-              logging: false,
+              logging: true,
               scrollX: 0,
               scrollY: 0,
-              ignoreElements: (element) => {
-                return element.tagName === 'SCRIPT' || 
-                       element.classList.contains('reveal-controls') ||
-                       element.classList.contains('progress')
+              foreignObjectRendering: false,
+              imageTimeout: 0,
+              removeContainer: true,
+              onclone: (clonedDoc) => {
+                // Ensure all elements in the cloned document are visible
+                const clonedSlide = clonedDoc.querySelector('.reveal .slides section') as HTMLElement
+                if (clonedSlide) {
+                  clonedSlide.style.display = 'block'
+                  clonedSlide.style.visibility = 'visible'
+                  clonedSlide.style.opacity = '1'
+                  clonedSlide.style.transform = 'none'
+                  clonedSlide.style.position = 'static'
+                  
+                  // Make all child elements visible
+                  const allElements = clonedSlide.querySelectorAll('*')
+                  allElements.forEach(el => {
+                    const htmlEl = el as HTMLElement
+                    htmlEl.style.visibility = 'visible'
+                    htmlEl.style.opacity = '1'
+                    htmlEl.style.display = htmlEl.style.display === 'none' ? 'block' : htmlEl.style.display
+                  })
+                }
               }
             })
             
-            // Convert to JPEG for better compatibility
-            const imgData = canvas.toDataURL('image/jpeg', 0.92)
+            // Convert to PNG for better color preservation
+            const imgData = canvas.toDataURL('image/png', 1.0)
             
             if (slideIndex > 0) {
               pdf.addPage()
             }
             
             // Add image to PDF with A4 dimensions
-            pdf.addImage(imgData, 'JPEG', 0, 0, 595, 842)
+            pdf.addImage(imgData, 'PNG', 0, 0, 595, 842)
           }
           
           // Allow UI to breathe between batches

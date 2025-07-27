@@ -5,7 +5,7 @@
 
 import { FC, memo } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
 import { generateId } from 'ai'
 import { Check, Copy, Download } from 'lucide-react'
@@ -114,35 +114,36 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       </div>
       <SyntaxHighlighter
         language={language}
-        style={coldarkDark}
+        style={oneDark}
         PreTag="div"
         showLineNumbers
         customStyle={{
           margin: 0,
           width: '100%',
           background: 'transparent',
-          padding: '0.75rem 0.5rem',
-          fontSize: '0.75rem',
+          padding: '0.75rem',
+          fontSize: '0.85rem',
           overflowX: 'auto',
-          maxWidth: '100%'
+          maxWidth: '100%',
+          borderRadius: '0',
+          lineHeight: '1.4'
         }}
         lineNumberStyle={{
           userSelect: 'none',
-          minWidth: '2em',
-          paddingRight: '0.5em',
-          fontSize: '0.7rem'
+          minWidth: '3em',
+          paddingRight: '1em',
+          fontSize: '0.8rem',
+          textAlign: 'right'
         }}
         codeTagProps={{
           style: {
-            fontSize: '0.75rem',
-            fontFamily: 'var(--font-mono)',
-            whiteSpace: 'pre',
-            wordWrap: 'break-word',
-            overflowWrap: 'break-word'
+            fontSize: '0.85rem',
+            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+            lineHeight: '1.4'
           }
         }}
-        wrapLines={true}
-        wrapLongLines={true}
+        wrapLines={false}
+        wrapLongLines={false}
       >
         {value}
       </SyntaxHighlighter>

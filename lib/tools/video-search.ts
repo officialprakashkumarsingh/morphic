@@ -34,4 +34,4 @@ export function createVideoSearchTool(fullModel: string) {
 }
 
 // Default export for backward compatibility, using a default model
-export const videoSearchTool = createVideoSearchTool('openai:gpt-4o-mini')
+export const videoSearchTool = createVideoSearchTool('openai-compatible:claude-3.5-sonnet')

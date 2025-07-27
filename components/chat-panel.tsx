@@ -125,13 +125,11 @@ export function ChatPanel({
       )}
     >
       {messages.length === 0 && (
-        <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-8">
-          <div className="flex items-center gap-4">
-            <IconLogo className="size-16 text-muted-foreground" />
-            <h1 className="text-4xl font-semibold">
-              How can I help you today?
-            </h1>
-          </div>
+        <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-8 mb-8">
+          <IconLogo className="size-16 text-muted-foreground" />
+          <h1 className="text-4xl font-semibold text-center">
+            How can I help you today?
+          </h1>
         </div>
       )}
       <form

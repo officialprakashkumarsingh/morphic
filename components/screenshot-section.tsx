@@ -119,7 +119,7 @@ export function ScreenshotSection({ tool, isOpen, onOpenChange }: ScreenshotSect
             {data?.type === 'error' ? (
               <Section title="Screenshot Capture Failed">
                 <div className="text-red-600 text-sm">
-                  {data.error || 'Failed to capture screenshot'}
+                  Failed to capture screenshot. Please try again or check the URL.
                 </div>
               </Section>
             ) : data?.screenshotUrl ? (
@@ -248,31 +248,7 @@ export function ScreenshotSection({ tool, isOpen, onOpenChange }: ScreenshotSect
                       </CardContent>
                     </Card>
 
-                    {/* OCR Analysis */}
-                    {data.analysis && (
-                      <Card>
-                        <CardContent className="p-4">
-                          <h4 className="font-medium mb-3 flex items-center gap-2">
-                            <Eye className="size-4" />
-                            Visual Analysis
-                          </h4>
-                          <div className="space-y-2">
-                            <div className="text-sm whitespace-pre-line text-muted-foreground">
-                              {data.analysis}
-                            </div>
-                            
-                            {data.ocrText && (
-                              <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                                <h5 className="text-sm font-medium mb-2">Detected Text:</h5>
-                                <p className="text-sm text-muted-foreground">
-                                  {data.ocrText}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
+
 
                     {/* Screenshot Details */}
                     <Card>

@@ -2,17 +2,17 @@ import { tool } from 'ai'
 import { createWorker } from 'tesseract.js'
 import { z } from 'zod'
 
-export function createOCRTool() {
+export function createScreenshotAnalysisTool() {
   return tool({
-    description: `Extract text from images or screenshots using OCR (Optical Character Recognition).
+    description: `Analyze screenshots and extract text using OCR (Optical Character Recognition).
     
     Use this tool when users want to:
-    - Extract text from a screenshot
-    - Read text content from images
-    - Analyze text in captured images
-    - Get readable text from visual content
+    - Analyze a screenshot in detail
+    - Extract text from screenshots
+    - Read content from captured images
+    - Get detailed analysis of screenshot content
     
-    This tool performs heavy processing, so only use it when specifically requested.`,
+    This tool performs deep analysis, so only use it when specifically requested.`,
     parameters: z.object({
       imageUrl: z.string().describe('The URL of the image to extract text from'),
       analysis: z.string().optional().describe('Specific analysis request about the text content')
@@ -100,7 +100,7 @@ export function createOCRTool() {
         }
         
         const result = {
-          type: 'ocr',
+          type: 'screenshot_analysis',
           imageUrl,
           extractedText: cleanedText,
           confidence: Math.round(confidence),
@@ -117,11 +117,11 @@ export function createOCRTool() {
         console.error('OCR extraction failed:', error)
         
         const errorResult = {
-          type: 'ocr',
+          type: 'screenshot_analysis',
           imageUrl,
           extractedText: '',
           confidence: 0,
-          analysis: `❌ OCR text extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\n🔄 Possible reasons:\n• Image quality too low\n• Text too small or blurry\n• Complex fonts or styling\n• Network connection issues\n• Processing timeout\n\nTip: Try with a higher quality image or simpler text content.`,
+          analysis: `❌ Screenshot analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\n🔄 Possible reasons:\n• Image quality too low\n• Text too small or blurry\n• Complex fonts or styling\n• Network connection issues\n• Processing timeout\n\nTip: Try with a higher quality image or simpler text content.`,
           timestamp: new Date().toISOString(),
           status: 'error'
         }
@@ -141,4 +141,4 @@ export function createOCRTool() {
   })
 }
 
-export const ocrTool = createOCRTool()
+export const screenshotAnalysisTool = createScreenshotAnalysisTool()

@@ -4,7 +4,7 @@ import { ToolInvocation } from 'ai'
 
 import { ChartSection } from './chart-section'
 import { DiagramSection } from './diagram-section'
-import { OCRSection } from './ocr-section'
+import { ScreenshotAnalysisSection } from './ocr-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { ScreenshotSection } from './screenshot-section'
@@ -108,9 +108,9 @@ export function ToolSection({
           onOpenChange={onOpenChange}
         />
       )
-    case 'ocr':
+    case 'screenshot_analysis':
       return (
-        <OCRSection tool={tool} />
+        <ScreenshotAnalysisSection tool={tool} />
       )
       default:
         return null

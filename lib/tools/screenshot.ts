@@ -48,8 +48,12 @@ export function createScreenshotTool(fullModel: string) {
         const screenshotUrl = await captureScreenshot(url, width, height, fullPage, waitFor)
         console.log('Screenshot URL generated:', screenshotUrl)
         
-        // Skip automatic OCR - only provide basic screenshot info
-        const basicAnalysis = await createBasicAnalysis(url, screenshotUrl, analysis)
+        // No analysis - just screenshot capture
+        const domain = extractDomainFromUrl(url)
+        const basicInfo = {
+          text: `Screenshot captured: ${domain}`,
+          analysis: `📸 Screenshot captured successfully from ${url}`
+        }
       
               const result = {
           type: 'screenshot',
@@ -58,8 +62,8 @@ export function createScreenshotTool(fullModel: string) {
           width,
           height,
           fullPage,
-          ocrText: basicAnalysis.text,
-          analysis: basicAnalysis.analysis,
+          ocrText: basicInfo.text,
+          analysis: basicInfo.analysis,
           timestamp: new Date().toISOString(),
           status: 'success'
         }
@@ -105,11 +109,11 @@ async function captureScreenshot(
   // Try multiple screenshot services for better reliability
   
   try {
-    // Method 1: Simple, fast screenshot service
-    const simpleUrl = `https://api.thumbnail.ws/api/thumbnail/screenshot?url=${encodeURIComponent(url)}&width=${width}&height=${height}&format=png`
+    // Method 1: WordPress mShots service (most reliable)
+    const wordpressUrl = `https://s0.wp.com/mshots/v1/${encodeURIComponent(url)}?w=${width}&h=${height}`
     
-    console.log('Using thumbnail.ws service for screenshot')
-    return simpleUrl
+    console.log('Using WordPress mShots service for screenshot')
+    return wordpressUrl
   } catch (error) {
     console.log('Primary service failed, trying alternatives...')
   }
@@ -161,48 +165,6 @@ async function captureScreenshot(
   const thumbnailWsUrl = `https://api.thumbnail.ws/api/thumbnail/screenshot?url=${encodeURIComponent(url)}&width=${width}&height=${height}&format=png`
   
   return thumbnailWsUrl
-}
-
-// Basic analysis without OCR for fast screenshot capture
-async function createBasicAnalysis(originalUrl: string, screenshotUrl: string, userAnalysis?: string): Promise<{text: string, analysis: string}> {
-  const domain = extractDomainFromUrl(originalUrl)
-  
-  let analysis = "📸 Screenshot Captured Successfully:\n\n"
-  analysis += "✅ Website screenshot generated\n"
-  analysis += "✅ Image ready for viewing\n"
-  analysis += "✅ High-quality capture completed\n\n"
-  
-  // Domain-specific quick insights
-  if (domain.includes('github')) {
-    analysis += "🔍 GitHub Platform:\n"
-    analysis += "• Code repository interface\n"
-    analysis += "• Developer tools and navigation\n\n"
-  } else if (domain.includes('google')) {
-    analysis += "🔍 Google Service:\n"
-    analysis += "• Clean search interface\n"
-    analysis += "• Google product page\n\n"
-  } else if (domain.includes('netflix')) {
-    analysis += "🔍 Netflix Platform:\n"
-    analysis += "• Streaming service interface\n"
-    analysis += "• Content discovery layout\n\n"
-  }
-  
-  if (userAnalysis) {
-    analysis += `🎯 User Request: "${userAnalysis}"\n`
-    analysis += "Screenshot captured for your analysis.\n\n"
-  }
-  
-  analysis += "💡 Next Steps:\n"
-  analysis += "• View the screenshot image below\n"
-  analysis += "• Request OCR text extraction if needed\n"
-  analysis += "• Ask for specific analysis of visible elements\n\n"
-  
-  analysis += "🔄 For text extraction, request: 'Extract text from this screenshot'"
-  
-  return {
-    text: `Screenshot of ${domain} captured successfully. Visual inspection available.`,
-    analysis: analysis
-  }
 }
 
 // Heavy OCR analysis - only run when specifically requested

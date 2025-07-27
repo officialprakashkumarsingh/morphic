@@ -2,8 +2,8 @@
 
 import type { ToolInvocation } from 'ai'
 
-interface OCRResult {
-  type: 'ocr'
+interface ScreenshotAnalysisResult {
+  type: 'screenshot_analysis'
   imageUrl: string
   extractedText: string
   confidence: number
@@ -14,12 +14,12 @@ interface OCRResult {
   status: 'success' | 'error'
 }
 
-interface OCRSectionProps {
+interface ScreenshotAnalysisSectionProps {
   tool: ToolInvocation
 }
 
-export function OCRSection({ tool }: OCRSectionProps) {
-  const data: OCRResult | undefined = (() => {
+export function ScreenshotAnalysisSection({ tool }: ScreenshotAnalysisSectionProps) {
+  const data: ScreenshotAnalysisResult | undefined = (() => {
     try {
       if (tool.state === 'result') {
         const result = (tool as any).result
@@ -27,7 +27,7 @@ export function OCRSection({ tool }: OCRSectionProps) {
           if (typeof result === 'string') {
             return JSON.parse(result)
           } else if (typeof result === 'object') {
-            return result as OCRResult
+            return result as ScreenshotAnalysisResult
           }
         }
       }
@@ -35,61 +35,61 @@ export function OCRSection({ tool }: OCRSectionProps) {
     } catch (error) {
       console.error('Failed to parse OCR data:', error, 'Raw result:', (tool as any).result)
       return {
-        type: 'ocr',
+        type: 'screenshot_analysis',
         imageUrl: '',
         extractedText: '',
         confidence: 0,
-        analysis: `Failed to parse OCR data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        analysis: `Failed to parse screenshot analysis data: ${error instanceof Error ? error.message : 'Unknown error'}`,
         timestamp: new Date().toISOString(),
         status: 'error'
-      } as OCRResult
+      } as ScreenshotAnalysisResult
     }
   })()
 
   if (tool.state === 'call') {
     return (
-      <div className="bg-muted p-4 rounded-lg border animate-pulse">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="font-medium">🔍 Extracting Text with OCR...</span>
+              <div className="bg-muted p-4 rounded-lg border animate-pulse">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="font-medium">🔍 Analyzing Screenshot...</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Extracting text and analyzing screenshot content. This may take a moment for complex images...
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Processing image with Optical Character Recognition. This may take a moment for complex images...
-        </p>
-      </div>
     )
   }
 
   if (!data) {
-    return (
-      <div className="bg-muted p-4 rounded-lg border">
-        <span className="text-sm text-muted-foreground">OCR processing incomplete</span>
-      </div>
-    )
+          return (
+        <div className="bg-muted p-4 rounded-lg border">
+          <span className="text-sm text-muted-foreground">Screenshot analysis incomplete</span>
+        </div>
+      )
   }
 
   if (data.status === 'error') {
     return (
-      <div className="bg-red-50 border-red-200 p-4 rounded-lg border">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-red-600">❌</span>
-          <span className="font-medium text-red-800">OCR Text Extraction Failed</span>
+              <div className="bg-red-50 border-red-200 p-4 rounded-lg border">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-red-600">❌</span>
+            <span className="font-medium text-red-800">Screenshot Analysis Failed</span>
+          </div>
+          <div className="text-sm text-red-700 whitespace-pre-wrap">
+            {data.analysis}
+          </div>
         </div>
-        <div className="text-sm text-red-700 whitespace-pre-wrap">
-          {data.analysis}
-        </div>
-      </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {/* OCR Results Header */}
+      {/* Screenshot Analysis Results Header */}
       <div className="bg-green-50 border-green-200 p-4 rounded-lg border">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="text-green-600">🔍</span>
-            <span className="font-medium text-green-800">OCR Text Extraction Complete</span>
+            <span className="font-medium text-green-800">Screenshot Analysis Complete</span>
           </div>
           <div className="text-sm text-green-600">
             {data.confidence}% confidence
@@ -121,7 +121,7 @@ export function OCRSection({ tool }: OCRSectionProps) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src={data.imageUrl} 
-            alt="OCR source image"
+            alt="Screenshot being analyzed"
             className="max-w-full h-auto rounded border"
             loading="lazy"
           />

@@ -3,6 +3,7 @@
 import { ToolInvocation } from 'ai'
 
 import { DiagramSection } from './diagram-section'
+import { PresentationSection } from './presentation-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { SearchSection } from './search-section'
@@ -84,6 +85,14 @@ export function ToolSection({
     case 'diagram':
       return (
         <DiagramSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'presentation':
+      return (
+        <PresentationSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}

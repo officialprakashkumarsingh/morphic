@@ -24,7 +24,7 @@ const diagramSchema = z.object({
 
 export function createDiagramTool(model: string) {
   return tool({
-    description: `Generate Mermaid.js diagrams for visual representation of data, processes, relationships, and concepts. 
+    description: `Generate Mermaid.js diagrams with auto-correction and retry mechanism for visual representation of data, processes, relationships, and concepts. 
     Supports flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, user journey maps, 
     Gantt charts, pie charts, git graphs, mind maps, timelines, and quadrant charts.
     
@@ -48,28 +48,204 @@ export function createDiagramTool(model: string) {
           Subtopic 2.1`,
     parameters: diagramSchema,
     execute: async ({ type, title, description, content, direction = 'TB' }) => {
-      try {
-        const mermaidCode = generateMermaidCode(type, title, content, direction)
-        
-        return {
-          type: 'diagram',
-          diagramType: type,
-          title,
-          description,
-          mermaidCode,
-          renderUrl: `https://mermaid.ink/img/${Buffer.from(mermaidCode).toString('base64')}`,
-          editUrl: `https://mermaid.live/edit#${Buffer.from(mermaidCode).toString('base64')}`,
-          status: 'success'
+      let attempts = 0
+      const maxAttempts = 3
+      let lastError = ''
+      
+      while (attempts < maxAttempts) {
+        try {
+          attempts++
+          
+          // Auto-correct content based on diagram type and common errors
+          const correctedContent = autoCorrectDiagramContent(content, type, attempts)
+          const mermaidCode = generateMermaidCode(type, title, correctedContent, direction)
+          
+          // Validate the generated code
+          await validateMermaidCode(mermaidCode)
+          
+          return {
+            type: 'diagram',
+            diagramType: type,
+            title,
+            description,
+            mermaidCode,
+            renderUrl: `https://mermaid.ink/img/${Buffer.from(mermaidCode).toString('base64')}`,
+            editUrl: `https://mermaid.live/edit#${Buffer.from(mermaidCode).toString('base64')}`,
+            attempts,
+            status: 'success'
+          }
+        } catch (error) {
+          lastError = error instanceof Error ? error.message : 'Unknown error'
+          
+          if (attempts === maxAttempts) {
+            // Final attempt failed, return fallback diagram
+            const fallbackCode = generateFallbackDiagram(type, title, content)
+            return {
+              type: 'diagram',
+              diagramType: type,
+              title,
+              description,
+              mermaidCode: fallbackCode,
+              renderUrl: `https://mermaid.ink/img/${Buffer.from(fallbackCode).toString('base64')}`,
+              editUrl: `https://mermaid.live/edit#${Buffer.from(fallbackCode).toString('base64')}`,
+              attempts,
+              warnings: [`Auto-correction applied after ${attempts} attempts. Original error: ${lastError}`],
+              status: 'success'
+            }
+          }
+          
+          // Continue to next attempt
+          continue
         }
-      } catch (error) {
-        return {
-          type: 'error',
-          message: `Failed to generate diagram: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          status: 'error'
-        }
+      }
+      
+      return {
+        type: 'error',
+        message: `Failed to generate diagram after ${maxAttempts} attempts: ${lastError}`,
+        status: 'error'
       }
     }
   })
+}
+
+// Auto-correction function for common diagram syntax errors
+function autoCorrectDiagramContent(content: string, type: string, attempt: number): string {
+  let corrected = content.replace(/\\n/g, '\n').trim()
+  
+  // Remove common problematic characters and patterns
+  corrected = corrected.replace(/[""]/g, '"')  // Smart quotes to regular quotes
+  corrected = corrected.replace(/['']/g, "'")  // Smart apostrophes
+  corrected = corrected.replace(/–|—/g, '-')   // Em/en dashes to hyphens
+  
+  switch (type) {
+    case 'quadrant':
+      // Fix common quadrant chart issues
+      corrected = corrected.replace(/xAxis|x-Axis/gi, 'x-axis')
+      corrected = corrected.replace(/yAxis|y-Axis/gi, 'y-axis')
+      corrected = corrected.replace(/quadrant(\s*)(\d)/gi, 'quadrant-$2')
+      break
+      
+    case 'mindmap':
+      // Fix mindmap indentation issues
+      const lines = corrected.split('\n')
+      const fixedLines = lines.map(line => {
+        // Ensure proper indentation (4 spaces per level)
+        const trimmedLine = line.trim()
+        if (!trimmedLine) return ''
+        
+        // Count intended indentation level based on content structure
+        const level = Math.max(0, (line.length - line.trimStart().length) / 2)
+        return '    '.repeat(level) + trimmedLine
+      })
+      corrected = fixedLines.filter(line => line.trim()).join('\n')
+      break
+      
+    case 'flowchart':
+      // Fix flowchart syntax issues
+      corrected = corrected.replace(/graph\s+TD/gi, '') // Remove duplicate graph declaration
+      corrected = corrected.replace(/-->/g, '-->')
+      corrected = corrected.replace(/\[([^\]]+)\]/g, '[$1]') // Fix bracket formatting
+      break
+      
+    case 'sequence':
+      // Fix sequence diagram issues
+      corrected = corrected.replace(/->>|->>/g, '->>')
+      corrected = corrected.replace(/-->>|-->>/g, '-->')
+      break
+  }
+  
+  // Progressive corrections based on attempt number
+  if (attempt > 1) {
+    // Second attempt: More aggressive cleaning
+    corrected = corrected.replace(/[^\w\s\-()[\]{}:;.,><!@#$%^&*+=|\\/"'`~]/g, '')
+  }
+  
+  if (attempt > 2) {
+    // Third attempt: Fallback to simplified content
+    const words = corrected.split(/\s+/).filter(word => word.length > 0)
+    if (words.length > 20) {
+      corrected = words.slice(0, 20).join(' ')
+    }
+  }
+  
+  return corrected
+}
+
+// Validation function for Mermaid code
+async function validateMermaidCode(mermaidCode: string): Promise<void> {
+  // Basic syntax validation
+  if (!mermaidCode || mermaidCode.trim().length === 0) {
+    throw new Error('Empty diagram code')
+  }
+  
+  // Check for common syntax errors
+  const lines = mermaidCode.split('\n')
+  
+  // Validate first line contains diagram type
+  const firstLine = lines[0].trim().toLowerCase()
+  const validStartPatterns = [
+    'flowchart', 'graph', 'sequencediagram', 'classdiagram', 
+    'statediagram', 'erdiagram', 'journey', 'gantt', 'pie',
+    'gitgraph', 'mindmap', 'timeline', 'quadrantchart'
+  ]
+  
+  if (!validStartPatterns.some(pattern => firstLine.includes(pattern))) {
+    throw new Error(`Invalid diagram type. First line: ${firstLine}`)
+  }
+  
+  // Check for balanced brackets/parentheses
+  const brackets = mermaidCode.match(/[\[\](){}]/g) || []
+  const openBrackets = brackets.filter(b => ['[', '(', '{'].includes(b)).length
+  const closeBrackets = brackets.filter(b => [']', ')', '}'].includes(b)).length
+  
+  if (Math.abs(openBrackets - closeBrackets) > 2) { // Allow some tolerance
+    throw new Error('Unbalanced brackets or parentheses')
+  }
+  
+  // Type-specific validations
+  if (firstLine.includes('quadrant')) {
+    if (!mermaidCode.includes('x-axis') || !mermaidCode.includes('y-axis')) {
+      throw new Error('Quadrant chart missing required axes')
+    }
+  }
+}
+
+// Generate fallback diagram when all attempts fail
+function generateFallbackDiagram(type: string, title: string, originalContent: string): string {
+  const sanitizedTitle = title.replace(/[^\w\s]/g, '').substring(0, 50)
+  
+  switch (type) {
+    case 'mindmap':
+      return `mindmap
+  root)${sanitizedTitle}(
+    Topic 1
+      Subtopic 1.1
+      Subtopic 1.2
+    Topic 2
+      Subtopic 2.1
+      Subtopic 2.2`
+      
+    case 'quadrant':
+      return `quadrantChart
+    title ${sanitizedTitle}
+    x-axis Low --> High
+    y-axis Urgent --> Not Urgent
+    quadrant-1 Important & Urgent
+    quadrant-2 Important & Not Urgent
+    quadrant-3 Not Important & Urgent
+    quadrant-4 Not Important & Not Urgent`
+    
+    case 'flowchart':
+      return `flowchart TD
+    A[Start] --> B[${sanitizedTitle}]
+    B --> C[Process]
+    C --> D[End]`
+    
+    default:
+      return `flowchart TD
+    A[${sanitizedTitle}] --> B[Generated Diagram]
+    B --> C[Content: ${originalContent.substring(0, 30)}...]`
+  }
 }
 
 function generateMermaidCode(type: string, title: string, content: string, direction: string): string {

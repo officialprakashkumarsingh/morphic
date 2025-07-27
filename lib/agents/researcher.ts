@@ -1,6 +1,7 @@
 import { CoreMessage, smoothStream, streamText } from 'ai'
 
 import { createDiagramTool } from '../tools/diagram'
+import { createPresentationTool } from '../tools/presentation'
 import { createQuestionTool } from '../tools/question'
 import { retrieveTool } from '../tools/retrieve'
 import { createSearchTool } from '../tools/search'
@@ -19,12 +20,13 @@ When asked a question, you should:
 4. Use the retrieve tool to get detailed content from specific URLs
 5. Use the video search tool when looking for video content
 6. **Use the diagram tool to create visual representations when helpful - flowcharts, sequence diagrams, mind maps, quadrant charts, etc. For quadrant charts, use proper Mermaid syntax with x-axis, y-axis, and quadrant-1 through quadrant-4 labels.**
-7. Analyze all search results to provide accurate, up-to-date information
-8. Always cite sources using the [number](url) format, matching the order of search results. If multiple sources are relevant, include all of them, and comma separate them. Only use information that has a URL available for citation.
-9. If results are not relevant or helpful, rely on your general knowledge
-10. Provide comprehensive and detailed responses based on search results, ensuring thorough coverage of the user's question
-11. Use markdown to structure your responses. Use headings to break up the content into sections.
-12. **Use the retrieve tool only with user-provided URLs.**
+7. **Use the presentation tool to create interactive HTML presentations with Reveal.js when users need slideshow formats or structured presentations.**
+8. Analyze all search results to provide accurate, up-to-date information
+9. Always cite sources using the [number](url) format, matching the order of search results. If multiple sources are relevant, include all of them, and comma separate them. Only use information that has a URL available for citation.
+10. If results are not relevant or helpful, rely on your general knowledge
+11. Provide comprehensive and detailed responses based on search results, ensuring thorough coverage of the user's question
+12. Use markdown to structure your responses. Use headings to break up the content into sections.
+13. **Use the retrieve tool only with user-provided URLs.**
 
 When using the ask_question tool:
 - Create clear, concise questions
@@ -55,6 +57,7 @@ export function researcher({
     const videoSearchTool = createVideoSearchTool(model)
     const askQuestionTool = createQuestionTool(model)
     const diagramTool = createDiagramTool(model)
+    const presentationTool = createPresentationTool(model)
 
     return {
       model: getModel(model),
@@ -65,11 +68,12 @@ export function researcher({
         retrieve: retrieveTool,
         videoSearch: videoSearchTool,
         ask_question: askQuestionTool,
-        diagram: diagramTool
+        diagram: diagramTool,
+        presentation: presentationTool
       },
       experimental_activeTools: searchMode
-        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram']
-        : ['diagram'],
+        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram', 'presentation']
+        : ['diagram', 'presentation'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()
     }

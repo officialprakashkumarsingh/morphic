@@ -30,6 +30,8 @@ interface DiagramResult {
   renderUrl?: string
   editUrl?: string
   message?: string
+  attempts?: number
+  warnings?: string[]
   status: 'success' | 'error'
 }
 
@@ -154,17 +156,34 @@ export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionPro
           <p className="text-sm text-muted-foreground mb-4">{data.description}</p>
         )}
 
+                {/* Auto-correction warnings */}
+        {data?.warnings && data.warnings.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+            <h4 className="text-sm font-medium text-amber-900 mb-2">
+              Auto-corrections applied (Attempt {data.attempts || 1}):
+            </h4>
+            <ul className="text-xs text-amber-800 space-y-1">
+              {data.warnings.map((warning, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="inline-block w-1 h-1 bg-amber-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  {warning}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {data?.mermaidCode && (
-        <Card>
-          <CardContent className="p-6">
-            {/* Diagram Render Area */}
-            <div
-              ref={diagramRef}
-              className="w-full overflow-x-auto flex justify-center items-center min-h-[300px] bg-gradient-to-br from-slate-50 to-white rounded-lg border border-slate-200 shadow-inner p-4"
-              style={{
-                fontFamily: "'Inter', 'Segoe UI', 'Arial', sans-serif"
-              }}
-            />
+          <Card>
+            <CardContent className="p-6">
+              {/* Diagram Render Area */}
+              <div
+                ref={diagramRef}
+                className="w-full overflow-x-auto flex justify-center items-center min-h-[300px] bg-gradient-to-br from-slate-50 to-white rounded-lg border border-slate-200 shadow-inner p-4"
+                style={{
+                  fontFamily: "'Inter', 'Segoe UI', 'Arial', sans-serif"
+                }}
+              />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 mt-4 pt-4 border-t">

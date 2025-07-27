@@ -104,7 +104,7 @@ export function ChatHistory() {
 
       if (error) throw error
 
-      router.push(`/chat/${data.id}`)
+      router.push(`/search/${data.id}`)
       loadChats()
     } catch (error) {
       console.error('Error creating chat:', error)
@@ -357,7 +357,7 @@ function ChatItem({
           />
         </div>
       ) : (
-        <Link href={`/chat/${chat.id}`} className="block">
+        <Link href={`/search/${chat.id}`} className="block">
           <div className="flex items-center justify-between p-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {chat.is_pinned && <Pin className="w-3 h-3 text-blue-500 flex-shrink-0" />}

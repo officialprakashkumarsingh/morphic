@@ -92,9 +92,10 @@ CREATE POLICY "Users can insert own profile" ON public.user_profiles
 CREATE TABLE IF NOT EXISTS public.chats (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-    title TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT 'New Chat',
     messages JSONB DEFAULT '[]'::jsonb,
     is_pinned BOOLEAN DEFAULT FALSE,
+    share_path TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -114,6 +115,10 @@ CREATE POLICY "Users can update own chats" ON public.chats
 
 CREATE POLICY "Users can delete own chats" ON public.chats
     FOR DELETE USING (auth.uid() = user_id);
+
+-- Policy for shared chats (anyone can view if share_path exists)
+CREATE POLICY "Anyone can view shared chats" ON public.chats
+    FOR SELECT USING (share_path IS NOT NULL);
 ```
 
 #### 4. Create User Analytics Table
@@ -169,6 +174,29 @@ CREATE TRIGGER update_chats_updated_at
 CREATE TRIGGER update_user_analytics_updated_at
     BEFORE UPDATE ON public.user_analytics
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Function to auto-update user analytics
+CREATE OR REPLACE FUNCTION update_user_analytics_on_chat()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Insert or update user analytics
+    INSERT INTO public.user_analytics (user_id, total_chats, last_active)
+    VALUES (NEW.user_id, 1, NOW())
+    ON CONFLICT (user_id) 
+    DO UPDATE SET 
+        total_chats = (
+            SELECT COUNT(*) FROM public.chats WHERE user_id = NEW.user_id
+        ),
+        last_active = NOW();
+    
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Trigger to update analytics when a chat is created
+CREATE TRIGGER update_analytics_on_chat_insert
+    AFTER INSERT ON public.chats
+    FOR EACH ROW EXECUTE FUNCTION update_user_analytics_on_chat();
 ```
 
 #### 6. Create Indexes for Performance
@@ -176,8 +204,11 @@ CREATE TRIGGER update_user_analytics_updated_at
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_chats_user_id ON public.chats(user_id);
 CREATE INDEX IF NOT EXISTS idx_chats_created_at ON public.chats(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chats_updated_at ON public.chats(updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_chats_is_pinned ON public.chats(is_pinned);
+CREATE INDEX IF NOT EXISTS idx_chats_share_path ON public.chats(share_path) WHERE share_path IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_user_analytics_user_id ON public.user_analytics(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON public.user_profiles(email);
 ```
 
 #### 7. Authentication Settings
@@ -200,6 +231,9 @@ Create a `.env.local` file with:
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://pxmhiaxrivtlkrjrqmkb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bWhpYXhyaXZ0bGtyanJxbWtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDk1MzQsImV4cCI6MjA2OTIyNTUzNH0.0x9HweD2DCZcGSso0Xx5v1AAgpWvC_ZZO9THBzRovTs
+
+# Chat History (Required for chat functionality)
+ENABLE_SAVE_CHAT_HISTORY=true
 
 # AI Models (Optional)
 OPENAI_API_KEY=your_openai_api_key_here
@@ -249,11 +283,13 @@ The app supports Progressive Web App features:
 ## 💬 Chat Features
 
 - **Multi-session chat management**
+- **Auto-generated chat titles** from last user message
 - **Chat history with search**
 - **Pin important chats**
 - **Rename and delete chats**
-- **Auto-generated chat titles**
+- **Share chats publicly**
 - **Real-time message sync**
+- **User-specific chat isolation**
 
 ## 📊 User Analytics
 

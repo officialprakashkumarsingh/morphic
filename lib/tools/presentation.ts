@@ -240,6 +240,74 @@ function generateRevealPresentation(config: PresentationConfig): string {
             justify-content: center;
             align-items: center;
         }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .reveal .slides section {
+                padding: 30px !important;
+                font-size: 12px !important;
+            }
+            .reveal h1 {
+                font-size: 2.5em !important;
+            }
+            .reveal h2 {
+                font-size: 2em !important;
+            }
+            .reveal h3 {
+                font-size: 1.7em !important;
+            }
+            .reveal p, .reveal li {
+                font-size: 1.4em !important;
+            }
+            .reveal pre {
+                font-size: 1em !important;
+                padding: 15px !important;
+                overflow-x: auto !important;
+                word-wrap: break-word !important;
+                white-space: pre-wrap !important;
+            }
+            .reveal code {
+                font-size: 0.8em !important;
+                word-break: break-word !important;
+                white-space: pre-wrap !important;
+            }
+            .reveal .two-column {
+                flex-direction: column !important;
+                gap: 20px !important;
+            }
+            .reveal .two-column .column {
+                width: 100% !important;
+            }
+            .reveal ul, .reveal ol {
+                padding-left: 1.5em !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .reveal .slides section {
+                padding: 20px !important;
+            }
+            .reveal h1 {
+                font-size: 2em !important;
+            }
+            .reveal h2 {
+                font-size: 1.7em !important;
+            }
+            .reveal h3 {
+                font-size: 1.4em !important;
+            }
+            .reveal p, .reveal li {
+                font-size: 1.2em !important;
+            }
+            .reveal pre {
+                font-size: 0.9em !important;
+                padding: 10px !important;
+            }
+            .reveal code {
+                font-size: 0.7em !important;
+                padding: 2px 4px !important;
+            }
+        }
     </style>
 </head>
 <body>

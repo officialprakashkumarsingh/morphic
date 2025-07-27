@@ -3,6 +3,7 @@
 import { ToolInvocation } from 'ai'
 
 import { ChartSection } from './chart-section'
+import { CryptoSection } from './crypto-section'
 import { DiagramSection } from './diagram-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
@@ -108,11 +109,15 @@ export function ToolSection({
           onOpenChange={onOpenChange}
         />
               )
-    case 'stock':
+        case 'stock':
       return (
         <StockSection tool={tool} />
       )
-        default:
-          return null
+    case 'crypto':
+      return (
+        <CryptoSection tool={tool} />
+      )
+    default:
+      return null
   }
 }

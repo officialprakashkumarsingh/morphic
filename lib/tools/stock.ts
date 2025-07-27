@@ -152,30 +152,7 @@ async function fetchQuoteData(symbol: string) {
       }
     },
     
-    // Method 3: Mock data for demonstration (fallback)
-    async () => {
-      console.log('Using mock data for demonstration')
-      const mockPrice = 150 + Math.random() * 50 // Random price between 150-200
-      const mockChange = (Math.random() - 0.5) * 10 // Random change between -5 to +5
-      
-      return {
-        symbol,
-        name: getCompanyName(symbol),
-        price: mockPrice,
-        change: mockChange,
-        changePercent: (mockChange / mockPrice) * 100,
-        previousClose: mockPrice - mockChange,
-        open: mockPrice + (Math.random() - 0.5) * 2,
-        high: mockPrice + Math.random() * 3,
-        low: mockPrice - Math.random() * 3,
-        volume: Math.floor(Math.random() * 100000000),
-        marketCap: Math.floor(Math.random() * 1000000000000),
-        currency: 'USD',
-        exchangeName: 'NASDAQ',
-        marketState: 'REGULAR',
-        timezone: 'America/New_York'
-      }
-    }
+
   ]
   
   for (let i = 0; i < methods.length; i++) {
@@ -266,34 +243,7 @@ async function fetchChartData(symbol: string, period: string, interval: string) 
       })).filter((item: any) => item.close !== null)
     },
     
-    // Method 3: Generate mock chart data
-    async () => {
-      console.log('Generating mock chart data for demonstration')
-      const basePrice = 150 + Math.random() * 50
-      const days = period === '1d' ? 1 : period === '5d' ? 5 : period === '1mo' ? 30 : 90
-      const chartData = []
-      
-      for (let i = 0; i < days; i++) {
-        const date = new Date()
-        date.setDate(date.getDate() - (days - i))
-        
-        const dailyChange = (Math.random() - 0.5) * 0.05 // ±2.5% daily change
-        const price = basePrice * (1 + dailyChange * i / days)
-        const dailyVolatility = 0.02
-        
-        chartData.push({
-          date: date.toISOString(),
-          timestamp: Math.floor(date.getTime() / 1000),
-          open: price * (1 + (Math.random() - 0.5) * dailyVolatility),
-          high: price * (1 + Math.random() * dailyVolatility),
-          low: price * (1 - Math.random() * dailyVolatility),
-          close: price,
-          volume: Math.floor(Math.random() * 50000000)
-        })
-      }
-      
-      return chartData
-    }
+
   ]
   
   for (let i = 0; i < methods.length; i++) {
@@ -331,24 +281,8 @@ async function fetchNewsData(symbol: string) {
       publishedAt: new Date(item.providerPublishTime * 1000).toISOString()
     })) || []
   } catch (error) {
-    console.error('Failed to fetch news, using mock data:', error)
-    // Return mock news data
-    return [
-      {
-        title: `${symbol} Shows Strong Market Performance`,
-        summary: `${symbol} continues to demonstrate solid fundamentals and market positioning in today's trading session.`,
-        link: `https://finance.yahoo.com/quote/${symbol}`,
-        publisher: 'Financial News Network',
-        publishedAt: new Date().toISOString()
-      },
-      {
-        title: `Analysts Update ${symbol} Price Target`,
-        summary: `Market analysts have updated their price targets for ${symbol} based on recent financial performance and market conditions.`,
-        link: `https://finance.yahoo.com/quote/${symbol}/news`,
-        publisher: 'Market Watch',
-        publishedAt: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
-      }
-    ]
+    console.error('Failed to fetch news:', error)
+    return []
   }
 }
 
@@ -385,26 +319,8 @@ async function fetchStatsData(symbol: string) {
       sharesOutstanding: keyStats.sharesOutstanding?.raw
     }
   } catch (error) {
-    console.error('Failed to fetch stats, using mock data:', error)
-    // Return mock financial data based on common stock patterns
-    return {
-      peRatio: 15 + Math.random() * 20, // 15-35 PE ratio
-      pegRatio: 0.5 + Math.random() * 2, // 0.5-2.5 PEG ratio
-      priceToBook: 1 + Math.random() * 4, // 1-5 P/B ratio
-      dividendYield: Math.random() * 0.05, // 0-5% dividend yield
-      eps: 5 + Math.random() * 15, // $5-20 EPS
-      revenue: 1000000000 + Math.random() * 50000000000, // $1B-50B revenue
-      profitMargin: 0.1 + Math.random() * 0.2, // 10-30% profit margin
-      operatingMargin: 0.15 + Math.random() * 0.15, // 15-30% operating margin
-      returnOnEquity: 0.1 + Math.random() * 0.2, // 10-30% ROE
-      debtToEquity: Math.random() * 1, // 0-1 debt to equity
-      currentRatio: 1 + Math.random() * 2, // 1-3 current ratio
-      beta: 0.5 + Math.random() * 1.5, // 0.5-2 beta
-      fiftyTwoWeekHigh: 180 + Math.random() * 50, // $180-230
-      fiftyTwoWeekLow: 120 + Math.random() * 30, // $120-150
-      averageVolume: 10000000 + Math.random() * 40000000, // 10M-50M average volume
-      sharesOutstanding: 1000000000 + Math.random() * 5000000000 // 1B-6B shares
-    }
+    console.error('Failed to fetch stats:', error)
+    return {}
   }
 }
 

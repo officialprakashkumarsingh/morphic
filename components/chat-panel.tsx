@@ -126,7 +126,7 @@ export function ChatPanel({
     >
       {messages.length === 0 && (
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-12 mb-12">
-          <IconLogo className="size-12 text-muted-foreground" />
+          <IconLogo className="size-12 text-muted-foreground logo-alive hover:animate-spin hover:scale-125 transition-all duration-500 cursor-pointer drop-shadow-lg" />
           <h1 className="text-3xl font-semibold text-center">
             How can I help you today?
           </h1>

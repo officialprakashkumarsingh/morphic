@@ -12,8 +12,8 @@ import { Toaster } from '@/components/ui/sonner'
 import AppSidebar from '@/components/app-sidebar'
 import ArtifactRoot from '@/components/artifact/artifact-root'
 import Header from '@/components/header'
-import { ThemeProvider } from '@/components/theme-provider'
 import { PWAInstall } from '@/components/pwa-install'
+import { ThemeProvider } from '@/components/theme-provider'
 
 import './globals.css'
 

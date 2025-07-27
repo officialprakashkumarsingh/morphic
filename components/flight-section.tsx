@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { ToolInvocation } from 'ai'
 import { format } from 'date-fns'
 import { 
+  ChevronDown,
+  ChevronUp,
   Clock, 
   Compass, 
   Gauge, 
@@ -14,9 +16,7 @@ import {
   PlaneTakeoff, 
   Users, 
   Volume2, 
-  VolumeX,
-  ChevronDown,
-  ChevronUp
+  VolumeX
 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'

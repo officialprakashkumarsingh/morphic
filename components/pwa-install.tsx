@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { Download, X } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -18,10 +20,18 @@ export function PWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
+  const [isDismissed, setIsDismissed] = useState(false)
 
   useEffect(() => {
+    // Check if dismissed in current session (client-side only)
+    if (typeof window !== 'undefined') {
+      setIsDismissed(sessionStorage.getItem('pwa-install-dismissed') === 'true')
+    }
+
     // Check if app is already installed
     const checkInstalled = () => {
+      if (typeof window === 'undefined') return
+
       if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
         setIsInstalled(true)
         return
@@ -62,12 +72,14 @@ export function PWAInstall() {
       console.log('Flight Tracker PWA was installed')
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    window.addEventListener('appinstalled', handleAppInstalled)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.addEventListener('appinstalled', handleAppInstalled)
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      window.removeEventListener('appinstalled', handleAppInstalled)
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+        window.removeEventListener('appinstalled', handleAppInstalled)
+      }
     }
   }, [isInstalled])
 
@@ -94,15 +106,15 @@ export function PWAInstall() {
 
   const handleDismiss = () => {
     setShowInstallPrompt(false)
-    // Don't show again for this session
-    sessionStorage.setItem('pwa-install-dismissed', 'true')
+    setIsDismissed(true)
+    // Don't show again for this session (client-side only)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('pwa-install-dismissed', 'true')
+    }
   }
 
-  // Don't show if already installed or dismissed this session
-  if (isInstalled || 
-      sessionStorage.getItem('pwa-install-dismissed') === 'true' || 
-      !showInstallPrompt || 
-      !deferredPrompt) {
+  // Don't show if already installed, dismissed, or conditions not met
+  if (isInstalled || isDismissed || !showInstallPrompt || !deferredPrompt) {
     return null
   }
 

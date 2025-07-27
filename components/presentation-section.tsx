@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { ToolInvocation } from 'ai'
-import { Copy, Download, ExternalLink, Play } from 'lucide-react'
+import { Copy, Download, ExternalLink, FileText, Play } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -38,6 +38,7 @@ interface PresentationResult {
 export function PresentationSection({ tool, isOpen, onOpenChange }: PresentationSectionProps) {
   const previewRef = useRef<HTMLIFrameElement>(null)
   const [isPreviewLoaded, setIsPreviewLoaded] = useState(false)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   
   const data: PresentationResult | undefined =
     tool.state === 'result' ? tool.result : undefined
@@ -84,6 +85,152 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
         newWindow.document.close()
       }
     }
+  }
+
+  const exportToPdf = async () => {
+    if (!data?.html || !data?.title) return
+    
+    setIsGeneratingPdf(true)
+    
+    try {
+      // Dynamic import for client-side only
+      const { default: jsPDF } = await import('jspdf')
+      const html2canvas = await import('html2canvas')
+      
+      // Create a temporary container for the presentation
+      const tempContainer = document.createElement('div')
+      tempContainer.style.position = 'fixed'
+      tempContainer.style.top = '-9999px'
+      tempContainer.style.left = '-9999px'
+      tempContainer.style.width = '1920px'
+      tempContainer.style.height = '1080px'
+      tempContainer.style.zIndex = '-1'
+      
+      // Create presentation HTML optimized for PDF
+      const pdfOptimizedHtml = createPdfOptimizedHtml(data.html)
+      tempContainer.innerHTML = pdfOptimizedHtml
+      
+      document.body.appendChild(tempContainer)
+      
+      // Wait for fonts and styles to load
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Initialize Reveal.js in the temp container
+      const revealScript = document.createElement('script')
+      revealScript.innerHTML = `
+        if (window.Reveal) {
+          window.Reveal.initialize({
+            hash: false,
+            controls: false,
+            progress: false,
+            transition: 'none',
+            backgroundTransition: 'none'
+          });
+        }
+      `
+      tempContainer.appendChild(revealScript)
+      
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Get all slides
+      const slides = tempContainer.querySelectorAll('.reveal .slides section')
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [1920, 1080]
+      })
+      
+      for (let i = 0; i < slides.length; i++) {
+        const slide = slides[i] as HTMLElement
+        
+        // Make slide visible and positioned
+        slide.style.display = 'block'
+        slide.style.position = 'relative'
+        slide.style.width = '1920px'
+        slide.style.height = '1080px'
+        slide.style.padding = '60px'
+        slide.style.boxSizing = 'border-box'
+        
+        // Generate canvas for the slide
+        const canvas = await html2canvas.default(slide, {
+          width: 1920,
+          height: 1080,
+          scale: 1,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        })
+        
+        const imgData = canvas.toDataURL('image/jpeg', 0.95)
+        
+        if (i > 0) {
+          pdf.addPage()
+        }
+        
+        // Add image to PDF with proper sizing
+        pdf.addImage(imgData, 'JPEG', 0, 0, 1920, 1080)
+      }
+      
+      // Clean up
+      document.body.removeChild(tempContainer)
+      
+      // Save PDF
+      pdf.save(`${data.title.replace(/[^a-zA-Z0-9]/g, '_')}_presentation.pdf`)
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF. Please try downloading the HTML file instead.')
+    } finally {
+      setIsGeneratingPdf(false)
+    }
+  }
+  
+  const createPdfOptimizedHtml = (originalHtml: string): string => {
+    return originalHtml.replace(
+      /<style>/,
+      `<style>
+        .reveal .slides {
+          width: 1920px !important;
+          height: 1080px !important;
+        }
+        .reveal .slides section {
+          width: 1920px !important;
+          height: 1080px !important;
+          padding: 60px !important;
+          box-sizing: border-box !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+          text-align: center !important;
+        }
+        .reveal h1 {
+          font-size: 3.5em !important;
+          margin-bottom: 0.5em !important;
+        }
+        .reveal h2 {
+          font-size: 2.8em !important;
+          margin-bottom: 0.5em !important;
+        }
+        .reveal h3 {
+          font-size: 2.2em !important;
+          margin-bottom: 0.4em !important;
+        }
+        .reveal p, .reveal li {
+          font-size: 1.8em !important;
+          line-height: 1.4 !important;
+          margin-bottom: 0.5em !important;
+        }
+        .reveal ul, .reveal ol {
+          margin: 1em 0 !important;
+        }
+        .reveal .controls,
+        .reveal .progress {
+          display: none !important;
+        }
+        body {
+          background: white !important;
+        }`
+    )
   }
 
   if (data?.type === 'error') {
@@ -153,11 +300,44 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        onClick={exportToPdf}
+                        disabled={isGeneratingPdf}
+                      >
+                        {isGeneratingPdf ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : (
+                          <FileText className="h-4 w-4 mr-1" />
+                        )}
+                        {isGeneratingPdf ? 'Generating...' : 'Export PDF'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Export as PDF File</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <Button variant="outline" size="sm" onClick={downloadPresentation}>
                         <Download className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Download HTML File</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={openInNewTab}
+                      >
+                        <Play className="h-4 w-4 mr-1" />
+                        Present
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Start Presentation</TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
@@ -181,37 +361,10 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
                     </TooltipTrigger>
                     <TooltipContent>Copy HTML Code</TooltipContent>
                   </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={openInNewTab}
-                      >
-                        <Play className="h-4 w-4 mr-1" />
-                        Present
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Start Presentation</TooltipContent>
-                  </Tooltip>
                 </TooltipProvider>
               </div>
 
-              {/* Instructions */}
-              {data?.instructions && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-blue-900 mb-2">How to use:</h4>
-                  <ul className="text-xs text-blue-800 space-y-1">
-                    {data.instructions.map((instruction, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="inline-block w-1 h-1 bg-blue-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                        {instruction}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+
 
               {/* Presentation Details */}
               <details className="mt-4">

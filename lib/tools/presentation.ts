@@ -141,10 +141,39 @@ function generateRevealPresentation(config: PresentationConfig): string {
     <style>
         .reveal .slides section {
             text-align: left;
+            padding: 60px;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .reveal h1, .reveal h2, .reveal h3 {
             text-align: center;
             text-transform: none;
+            line-height: 1.2;
+        }
+        .reveal h1 {
+            font-size: 3.5em;
+            margin-bottom: 0.5em;
+        }
+        .reveal h2 {
+            font-size: 2.8em;
+            margin-bottom: 0.5em;
+        }
+        .reveal h3 {
+            font-size: 2.2em;
+            margin-bottom: 0.4em;
+        }
+        .reveal p, .reveal li {
+            font-size: 1.8em;
+            line-height: 1.4;
+            margin-bottom: 0.5em;
+        }
+        .reveal ul, .reveal ol {
+            margin: 1em 0;
+            text-align: left;
         }
         .reveal .title-slide {
             text-align: center;
@@ -152,17 +181,23 @@ function generateRevealPresentation(config: PresentationConfig): string {
         .reveal .two-column {
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
+            height: 70%;
         }
         .reveal .two-column .column {
             width: 48%;
+            padding: 0 20px;
         }
         .reveal .quote-slide {
             text-align: center;
         }
         .reveal .quote-slide blockquote {
             font-style: italic;
-            font-size: 1.5em;
+            font-size: 2.2em;
             margin: 1em 0;
+            padding: 20px;
+            border-left: 5px solid #ccc;
+            background: #f9f9f9;
         }
         .reveal .image-slide {
             text-align: center;
@@ -170,6 +205,7 @@ function generateRevealPresentation(config: PresentationConfig): string {
         .reveal .image-slide img {
             max-width: 80%;
             max-height: 60vh;
+            object-fit: contain;
         }
         .reveal .progress {
             display: ${includeProgress ? 'block' : 'none'};
@@ -179,6 +215,30 @@ function generateRevealPresentation(config: PresentationConfig): string {
         }
         .speaker-notes {
             display: none;
+        }
+        
+        /* PDF-specific optimizations */
+        @media print {
+            .reveal .slides section {
+                width: 1920px !important;
+                height: 1080px !important;
+                padding: 60px !important;
+                page-break-after: always;
+                break-inside: avoid;
+            }
+            .reveal .controls,
+            .reveal .progress {
+                display: none !important;
+            }
+        }
+        
+        /* Ensure proper spacing for content */
+        .reveal .content-wrapper {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 </head>

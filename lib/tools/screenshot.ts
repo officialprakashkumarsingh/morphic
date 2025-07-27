@@ -40,8 +40,8 @@ export function createScreenshotTool(fullModel: string) {
       const screenshotUrl = await captureScreenshot(url, width, height, fullPage, waitFor)
       console.log('Screenshot URL generated:', screenshotUrl)
       
-      // Perform OCR analysis
-      const ocrAnalysis = await performOCRAnalysis(url, analysis) // Pass original URL for better analysis
+      // Perform OCR analysis on the actual screenshot
+      const ocrAnalysis = await performOCRAnalysis(screenshotUrl, analysis)
       
       const result = {
         type: 'screenshot',

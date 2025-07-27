@@ -116,11 +116,13 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
         
         document.body.appendChild(tempContainer)
         
-        // Wait for fonts, emojis, and styles to load
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        // Wait for fonts and styles to load
+        await new Promise(resolve => setTimeout(resolve, 1000))
         
-        // Ensure all fonts and emojis are loaded
-        await document.fonts.ready
+        // Ensure all fonts are loaded
+        if (document.fonts) {
+          await document.fonts.ready
+        }
         
         // Get all slides
         const slides = tempContainer.querySelectorAll('.reveal .slides section')
@@ -157,19 +159,13 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
             const canvas = await html2canvas.default(slide, {
               width: 1920,
               height: 1080,
-              scale: 2, // Higher scale for better quality
+              scale: 1,
               useCORS: true,
-              allowTaint: true,
+              allowTaint: false,
               backgroundColor: '#ffffff',
-              foreignObjectRendering: true,
-              imageTimeout: 15000,
               logging: false,
-              removeContainer: false,
               scrollX: 0,
               scrollY: 0,
-              windowWidth: 1920,
-              windowHeight: 1080,
-              // Support for emojis and unicode
               ignoreElements: (element) => {
                 return element.tagName === 'SCRIPT' || 
                        element.classList.contains('reveal-controls') ||
@@ -177,15 +173,15 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
               }
             })
             
-            // Convert to PNG for better color and emoji support
-            const imgData = canvas.toDataURL('image/png', 1.0)
+            // Convert to JPEG for better compatibility
+            const imgData = canvas.toDataURL('image/jpeg', 0.92)
             
             if (slideIndex > 0) {
               pdf.addPage()
             }
             
             // Add image to PDF with proper sizing
-            pdf.addImage(imgData, 'PNG', 0, 0, 1920, 1080)
+            pdf.addImage(imgData, 'JPEG', 0, 0, 1920, 1080)
           }
           
           // Allow UI to breathe between batches
@@ -295,8 +291,8 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
     return originalHtml.replace(
       /<style>/,
       `<style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         
         .reveal .slides {
           width: 1920px !important;
@@ -311,33 +307,33 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
           flex-direction: column !important;
           justify-content: center !important;
           text-align: center !important;
-          font-family: 'Inter', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif !important;
-          color: inherit !important;
-          background: inherit !important;
+          font-family: Arial, sans-serif !important;
+          color: #333 !important;
+          background: #ffffff !important;
         }
         .reveal h1 {
           font-size: 3.5em !important;
           margin-bottom: 0.5em !important;
-          color: inherit !important;
-          font-weight: 700 !important;
+          color: #333 !important;
+          font-weight: bold !important;
         }
         .reveal h2 {
           font-size: 2.8em !important;
           margin-bottom: 0.5em !important;
-          color: inherit !important;
-          font-weight: 600 !important;
+          color: #333 !important;
+          font-weight: bold !important;
         }
         .reveal h3 {
           font-size: 2.2em !important;
           margin-bottom: 0.4em !important;
-          color: inherit !important;
-          font-weight: 500 !important;
+          color: #333 !important;
+          font-weight: bold !important;
         }
         .reveal p, .reveal li {
           font-size: 1.8em !important;
           line-height: 1.4 !important;
           margin-bottom: 0.5em !important;
-          color: inherit !important;
+          color: #333 !important;
         }
         .reveal ul, .reveal ol {
           margin: 1em 0 !important;
@@ -346,19 +342,19 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
         .reveal pre {
           font-size: 1.2em !important;
           padding: 20px !important;
-          background: #f5f5f5 !important;
-          border-radius: 8px !important;
+          background: #f8f8f8 !important;
           border: 1px solid #ddd !important;
-          overflow-x: auto !important;
+          overflow: visible !important;
           color: #333 !important;
+          white-space: pre-wrap !important;
+          word-wrap: break-word !important;
         }
         .reveal code {
-          font-family: 'Courier New', 'Monaco', 'Menlo', monospace !important;
-          padding: 4px 8px !important;
+          font-family: monospace !important;
+          padding: 2px 4px !important;
           background: #f0f0f0 !important;
-          border-radius: 4px !important;
-          color: #d73a49 !important;
-          font-size: 0.9em !important;
+          color: #333 !important;
+          font-size: 1em !important;
         }
         .reveal pre code {
           background: transparent !important;
@@ -388,28 +384,10 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
           font-style: italic !important;
           color: #555 !important;
         }
-        /* Emoji and icon support */
-        .fa, .fas, .far, .fab {
-          font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands' !important;
-          color: inherit !important;
-        }
-        /* Ensure emojis render properly */
-        * {
-          -webkit-font-feature-settings: "liga" on, "calt" on !important;
-          -moz-font-feature-settings: "liga" on, "calt" on !important;
-          font-feature-settings: "liga" on, "calt" on !important;
-          text-rendering: optimizeLegibility !important;
-        }
         body {
           background: white !important;
-          -webkit-print-color-adjust: exact !important;
-          color-adjust: exact !important;
+          color: #333 !important;
         }`
-    ).replace(
-      /<\/head>/,
-      `<link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" as="style">
-       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap">
-       </head>`
     )
   }
 
@@ -458,11 +436,11 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
                 <h4 className="text-sm font-medium mb-2">Preview</h4>
                 <div className="w-full border rounded-lg overflow-hidden bg-gray-50 relative">
                   {/* Mobile-responsive preview container */}
-                  <div className="aspect-video md:h-96 h-64">
+                  <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96">
                     <iframe
                       ref={previewRef}
                       srcDoc={createMobileOptimizedHtml(data.html || '')}
-                      className="w-full h-full"
+                      className="w-full h-full border-0"
                       onLoad={() => setIsPreviewLoaded(true)}
                       title="Presentation Preview"
                     />
@@ -479,7 +457,7 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-2 mb-4 pt-4 border-t">
+              <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-4 pt-4 border-t">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>

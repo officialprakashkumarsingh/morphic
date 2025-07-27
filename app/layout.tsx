@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter as FontSans, Pacifico } from 'next/font/google'
+import { Inter as FontSans, Lobster } from 'next/font/google'
 
 import { Analytics } from '@vercel/analytics/next'
 
@@ -22,10 +22,10 @@ const fontSans = FontSans({
   variable: '--font-sans'
 })
 
-const pacifico = Pacifico({
+const lobster = Lobster({
   weight: '400',
   subsets: ['latin'],
-  variable: '--font-pacifico'
+  variable: '--font-lobster'
 })
 
 const title = 'AhamAI - Morphic'
@@ -131,8 +131,8 @@ export default async function RootLayout({
       <body
         className={cn(
           'min-h-screen flex flex-col font-sans antialiased overflow-x-hidden',
-          fontSans.variable,
-          pacifico.variable
+                      fontSans.variable,
+            lobster.variable
         )}
       >
         <ThemeProvider

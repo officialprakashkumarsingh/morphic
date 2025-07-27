@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
 
       {/* Center - AhamAI Logo */}
       <div className="flex items-center">
-        <h1 className="font-pacifico text-xl text-blue-600 font-normal">AhamAI</h1>
+        <h1 className="font-lobster text-xl text-blue-600 font-normal">AhamAI</h1>
       </div>
 
       {/* Right side - User/Guest menu */}

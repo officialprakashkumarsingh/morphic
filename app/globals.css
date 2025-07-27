@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-.font-pacifico {
-  font-family: var(--font-pacifico), cursive;
+.font-lobster {
+  font-family: var(--font-lobster), cursive;
 }
 
 @keyframes float {

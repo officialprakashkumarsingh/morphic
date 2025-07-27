@@ -4,6 +4,7 @@ import { createDiagramTool } from '../tools/diagram'
 import { createPresentationTool } from '../tools/presentation'
 import { createQuestionTool } from '../tools/question'
 import { retrieveTool } from '../tools/retrieve'
+import { createScreenshotTool } from '../tools/screenshot'
 import { createSearchTool } from '../tools/search'
 import { createVideoSearchTool } from '../tools/video-search'
 import { getModel } from '../utils/registry'
@@ -11,7 +12,7 @@ import { getModel } from '../utils/registry'
 const SYSTEM_PROMPT = `
 Instructions:
 
-You are a helpful AI assistant with access to real-time web search, content retrieval, video search, diagram generation capabilities, and the ability to ask clarifying questions.
+You are a helpful AI assistant with access to real-time web search, content retrieval, video search, diagram generation, website screenshot capture with OCR analysis, and the ability to ask clarifying questions.
 
 When asked a question, you should:
 1. First, determine if you need more information to properly understand the user's query
@@ -58,6 +59,7 @@ export function researcher({
     const askQuestionTool = createQuestionTool(model)
     const diagramTool = createDiagramTool(model)
     const presentationTool = createPresentationTool(model)
+    const screenshotTool = createScreenshotTool(model)
 
     return {
       model: getModel(model),
@@ -69,10 +71,11 @@ export function researcher({
         videoSearch: videoSearchTool,
         ask_question: askQuestionTool,
         diagram: diagramTool,
-        presentation: presentationTool
+        presentation: presentationTool,
+        screenshot: screenshotTool
       },
       experimental_activeTools: searchMode
-        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram', 'presentation']
+        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram', 'presentation', 'screenshot']
         : ['diagram', 'presentation'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()

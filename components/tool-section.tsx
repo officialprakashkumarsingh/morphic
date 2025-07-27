@@ -6,6 +6,7 @@ import { ChartSection } from './chart-section'
 import { DiagramSection } from './diagram-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
+import { ScreenshotSection } from './screenshot-section'
 import { SearchSection } from './search-section'
 import { VideoSearchSection } from './video-search-section'
 
@@ -93,6 +94,14 @@ export function ToolSection({
     case 'chart':
       return (
         <ChartSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'screenshot':
+      return (
+        <ScreenshotSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}

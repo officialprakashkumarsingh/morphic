@@ -6,7 +6,7 @@ import { User } from '@supabase/supabase-js'
 
 import { cn } from '@/lib/utils'
 
-import { SidebarTrigger,useSidebar } from '@/components/ui/sidebar'
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
 
 import GuestMenu from './guest-menu'
 import UserMenu from './user-menu'
@@ -24,14 +24,19 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
         'w-full h-12'
       )}
     >
-      {/* Left side - User/Guest menu */}
-      <div className="flex items-center gap-2">
-        {user ? <UserMenu user={user} /> : <GuestMenu />}
-      </div>
-
-      {/* Right side - Sidebar trigger */}
+      {/* Left side - Sidebar trigger */}
       <div className="flex items-center gap-2">
         <SidebarTrigger />
+      </div>
+
+      {/* Center - AhamAI Logo */}
+      <div className="flex items-center">
+        <h1 className="font-pacifico text-xl text-blue-600 font-normal">AhamAI</h1>
+      </div>
+
+      {/* Right side - User/Guest menu */}
+      <div className="flex items-center gap-2">
+        {user ? <UserMenu user={user} /> : <GuestMenu />}
       </div>
     </header>
   )

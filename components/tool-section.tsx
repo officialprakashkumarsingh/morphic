@@ -5,6 +5,7 @@ import { ToolInvocation } from 'ai'
 import { ChartSection } from './chart-section'
 import { CryptoSection } from './crypto-section'
 import { DiagramSection } from './diagram-section'
+import { FlightSection } from './flight-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { ScreenshotSection } from './screenshot-section'
@@ -116,6 +117,10 @@ export function ToolSection({
     case 'crypto':
       return (
         <CryptoSection tool={tool} />
+      )
+    case 'flight':
+      return (
+        <FlightSection tool={tool} />
       )
     default:
       return null

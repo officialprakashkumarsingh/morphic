@@ -1,10 +1,23 @@
 'use client'
 
-import { useEffect, useRef,useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type { ToolInvocation } from 'ai'
 import { format } from 'date-fns'
-import { Clock, Compass, Gauge, MapPin, Pause,Plane, PlaneLanding, PlaneTakeoff, Play, Users, Volume2, VolumeX } from 'lucide-react'
+import { 
+  Clock, 
+  Compass, 
+  Gauge, 
+  MapPin, 
+  Plane, 
+  PlaneLanding, 
+  PlaneTakeoff, 
+  Users, 
+  Volume2, 
+  VolumeX,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,6 +42,7 @@ interface FlightData {
       coordinates: { lat: number; lon: number }
       scheduledTime: string
       estimatedTime: string
+      actualTime?: string | null
       gate: string
       terminal: number
     }
@@ -41,6 +55,7 @@ interface FlightData {
       coordinates: { lat: number; lon: number }
       scheduledTime: string
       estimatedTime: string
+      actualTime?: string | null
       gate: string
       terminal: number
     }
@@ -49,6 +64,8 @@ interface FlightData {
       altitude: number
       speed: number
       heading: number
+      registration: string
+      type: string
     }
     delay: number
     distance: number
@@ -60,7 +77,6 @@ interface FlightData {
     arrival: any
     distance: number
     duration: number
-    timezone: any
   }
   aircraft: {
     type: string
@@ -71,10 +87,6 @@ interface FlightData {
     capacity: number
     speed: number
     range: number
-  }
-  weather: {
-    departure: any
-    arrival: any
   }
   analysis: {
     summary: string
@@ -95,6 +107,7 @@ export function FlightSection({ tool }: FlightSectionProps) {
   const [activeTab, setActiveTab] = useState('overview')
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [expandedCard, setExpandedCard] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   
   // Parse the result data
@@ -131,10 +144,8 @@ export function FlightSection({ tool }: FlightSectionProps) {
     let gainNode: GainNode | null = null
 
     try {
-      // Create audio context
       audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
       
-      // Create oscillators and nodes
       oscillator1 = audioContext.createOscillator()
       oscillator2 = audioContext.createOscillator()
       gainNode = audioContext.createGain()
@@ -153,7 +164,7 @@ export function FlightSection({ tool }: FlightSectionProps) {
       filter.frequency.setValueAtTime(800, audioContext.currentTime)
       
       // Configure volume
-      gainNode.gain.setValueAtTime(0.05, audioContext.currentTime) // Reduced volume
+      gainNode.gain.setValueAtTime(0.03, audioContext.currentTime)
       
       // Connect audio graph
       oscillator1.connect(filter)
@@ -171,7 +182,6 @@ export function FlightSection({ tool }: FlightSectionProps) {
       setIsPlaying(false)
     }
 
-    // Cleanup function
     return () => {
       try {
         if (oscillator1) {
@@ -197,10 +207,13 @@ export function FlightSection({ tool }: FlightSectionProps) {
 
   if (tool.state === 'call') {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="flex items-center space-x-2">
-          <Plane className="h-5 w-5 animate-bounce text-blue-500" />
-          <span>Tracking flight...</span>
+      <div className="flex items-center justify-center p-6">
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+            <Plane className="h-6 w-6 text-blue-500 animate-pulse" />
+            <div className="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full animate-ping"></div>
+          </div>
+          <span className="text-sm font-medium">Tracking flight...</span>
         </div>
       </div>
     )
@@ -208,17 +221,17 @@ export function FlightSection({ tool }: FlightSectionProps) {
 
   if (error) {
     return (
-      <Card className="border-red-200 bg-red-50">
-        <CardContent className="p-6">
+      <Card className="border-red-200 bg-red-50 mx-2 sm:mx-0">
+        <CardContent className="p-4">
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
                 <Plane className="h-4 w-4 text-red-600" />
               </div>
             </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-800">Flight Tracking Error</h3>
-              <p className="mt-1 text-sm text-red-600">{error}</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-medium text-red-800 truncate">Flight Tracking Error</h3>
+              <p className="mt-1 text-xs text-red-600 break-words">{error}</p>
             </div>
           </div>
         </CardContent>
@@ -228,8 +241,8 @@ export function FlightSection({ tool }: FlightSectionProps) {
 
   if (!data) {
     return (
-      <div className="text-center p-8">
-        <p className="text-gray-500">No flight data available</p>
+      <div className="text-center p-6">
+        <p className="text-gray-500 text-sm">No flight data available</p>
       </div>
     )
   }
@@ -240,17 +253,19 @@ export function FlightSection({ tool }: FlightSectionProps) {
   }
 
   const formatDate = (isoString: string) => {
-    return format(new Date(isoString), 'MMM dd, yyyy')
+    return format(new Date(isoString), 'MMM dd')
   }
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'on time': return 'bg-green-100 text-green-800'
-      case 'delayed': return 'bg-red-100 text-red-800'
-      case 'in flight': return 'bg-blue-100 text-blue-800'
-      case 'landed': return 'bg-gray-100 text-gray-800'
-      case 'boarding': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'on time': 
+      case 'scheduled': return 'bg-green-500 text-white'
+      case 'delayed': return 'bg-red-500 text-white'
+      case 'active': 
+      case 'in flight': return 'bg-blue-500 text-white'
+      case 'landed': return 'bg-gray-500 text-white'
+      case 'boarding': return 'bg-yellow-500 text-white'
+      default: return 'bg-gray-500 text-white'
     }
   }
 
@@ -265,8 +280,8 @@ export function FlightSection({ tool }: FlightSectionProps) {
 
   const getDelayText = (delay: number) => {
     if (delay === 0) return 'On Time'
-    if (delay > 0) return `${delay}m Delayed`
-    return `${Math.abs(delay)}m Early`
+    if (delay > 0) return `+${delay}m`
+    return `${delay}m`
   }
 
   const getDelayColor = (delay: number) => {
@@ -275,152 +290,184 @@ export function FlightSection({ tool }: FlightSectionProps) {
     return 'text-blue-600'
   }
 
-  // Animated airplane component
+  // Enhanced animated airplane component
   const AnimatedAirplane = ({ progress, isLive }: { progress: number, isLive: boolean }) => {
-    const [position, setPosition] = useState(progress)
+    const [animatedProgress, setAnimatedProgress] = useState(progress)
+    const [altitude, setAltitude] = useState(0)
     
     useEffect(() => {
       if (isLive) {
         const interval = setInterval(() => {
-          setPosition(prev => Math.min(prev + 0.1, 100))
-        }, 1000)
+          setAnimatedProgress(prev => {
+            const newProgress = Math.min(prev + 0.2, 100)
+            // Simulate altitude changes during flight
+            if (newProgress < 10) setAltitude(newProgress * 500) // Takeoff
+            else if (newProgress > 90) setAltitude((100 - newProgress) * 500) // Landing
+            else setAltitude(35000 + Math.sin(newProgress / 10) * 2000) // Cruise with slight variations
+            return newProgress
+          })
+        }, 2000)
         return () => clearInterval(interval)
+      } else {
+        setAnimatedProgress(progress)
       }
-    }, [isLive])
+    }, [isLive, progress])
 
     return (
-      <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-        {/* Flight path */}
+      <div className="relative w-full h-6 bg-gray-100 rounded-full overflow-hidden">
+        {/* Flight path trail */}
         <div 
-          className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-1000"
-          style={{ width: `${position}%` }}
+          className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-2000 ease-out"
+          style={{ width: `${animatedProgress}%` }}
         />
         
-        {/* Animated airplane */}
+        {/* Sky gradient effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-sky-50 to-blue-50 opacity-50" />
+        
+        {/* Animated airplane with realistic movement */}
         <div 
-          className="absolute top-1/2 transform -translate-y-1/2 transition-all duration-1000"
-          style={{ left: `${Math.max(position - 2, 0)}%` }}
+          className="absolute top-1/2 transform -translate-y-1/2 transition-all duration-2000 ease-out"
+          style={{ 
+            left: `${Math.max(animatedProgress - 2, 0)}%`,
+            transform: `translateY(-50%) ${isLive ? `translateY(${Math.sin(Date.now() / 1000) * 2}px) rotate(${Math.sin(Date.now() / 2000) * 3}deg)` : ''}`
+          }}
         >
-          <div className={`text-blue-600 ${isLive ? 'animate-pulse' : ''}`}>
-            {data?.analysis?.phase === 'takeoff' && <PlaneTakeoff className="h-4 w-4" />}
-            {data?.analysis?.phase === 'approach' && <PlaneLanding className="h-4 w-4" />}
+          <div className={`text-blue-600 transition-transform duration-300 ${isLive ? 'animate-pulse' : ''}`}>
+            {data?.analysis?.phase === 'takeoff' && (
+              <PlaneTakeoff className={`h-5 w-5 ${isLive ? 'animate-bounce' : ''}`} />
+            )}
+            {data?.analysis?.phase === 'approach' && (
+              <PlaneLanding className={`h-5 w-5 ${isLive ? 'animate-bounce' : ''}`} />
+            )}
             {(data?.analysis?.phase === 'cruise' || !data?.analysis?.phase) && (
-              <Plane className={`h-4 w-4 ${isLive ? 'animate-bounce' : ''}`} />
+              <Plane className={`h-5 w-5 ${isLive ? 'animate-pulse' : ''}`} />
             )}
           </div>
+          
+          {/* Contrail effect for live flights */}
+          {isLive && animatedProgress > 20 && (
+            <div 
+              className="absolute top-1/2 right-full h-0.5 bg-white opacity-60 animate-pulse"
+              style={{ width: `${Math.min(animatedProgress * 2, 100)}px` }}
+            />
+          )}
         </div>
         
         {/* Departure marker */}
-        <div className="absolute top-1/2 left-0 transform -translate-y-1/2">
-          <MapPin className="h-3 w-3 text-green-600" />
+        <div className="absolute top-1/2 left-1 transform -translate-y-1/2">
+          <div className="w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-sm" />
         </div>
         
         {/* Arrival marker */}
-        <div className="absolute top-1/2 right-0 transform -translate-y-1/2">
-          <MapPin className="h-3 w-3 text-red-600" />
+        <div className="absolute top-1/2 right-1 transform -translate-y-1/2">
+          <div className="w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm" />
         </div>
+        
+        {/* Altitude indicator for live flights */}
+        {isLive && (
+          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 font-mono">
+            {Math.round(altitude).toLocaleString()}ft
+          </div>
+        )}
       </div>
     )
   }
 
+  const toggleCardExpansion = (cardId: string) => {
+    setExpandedCard(expandedCard === cardId ? null : cardId)
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Flight Header with Sound Control */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+    <div className="space-y-3 p-2 sm:p-0">
+      {/* Compact Flight Header */}
+      <Card className="border border-gray-200 shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 border border-blue-200">
                 {getStatusIcon(data.status.status, data.analysis.phase)}
               </div>
-              <div>
-                <h1 className="text-2xl font-bold">{data.status.flightNumber}</h1>
-                <p className="text-gray-600">{data.status.airline}</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg font-bold truncate">{data.status.flightNumber}</h1>
+                <p className="text-xs text-gray-600 truncate">{data.status.airline}</p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              {/* Sound Control */}
+            <div className="flex items-center space-x-2">
+              {/* Sound Control for Live Flights */}
               {data.status.live && (
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSoundEnabled(!soundEnabled)}
-                    className="flex items-center space-x-1"
-                  >
-                    {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                    <span className="text-xs">
-                      {isPlaying ? 'Playing' : soundEnabled ? 'Sound On' : 'Sound Off'}
-                    </span>
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className="h-8 w-8 p-0"
+                  title={soundEnabled ? 'Disable sound' : 'Enable sound'}
+                >
+                  {soundEnabled ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
+                </Button>
               )}
               
               <div className="text-right">
-                <Badge className={getStatusColor(data.status.status)}>
+                <Badge className={`text-xs px-2 py-0.5 ${getStatusColor(data.status.status)}`}>
                   {data.status.status}
                 </Badge>
-                <div className={`text-sm font-medium ${getDelayColor(data.status.delay)}`}>
+                <div className={`text-xs font-medium mt-0.5 ${getDelayColor(data.status.delay)}`}>
                   {getDelayText(data.status.delay)}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Flight Progress */}
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="font-medium">{data.status.departure.code}</span>
-              <span className="text-gray-500">{data.status.progress}% Complete</span>
-              <span className="font-medium">{data.status.arrival.code}</span>
-            </div>
-            
-            <AnimatedAirplane progress={data.status.progress} isLive={data.status.live} />
-            
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>{data.status.departure.city}</span>
-              <span>{data.status.arrival.city}</span>
+          {/* Enhanced Flight Progress */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-xs">
+              <div className="flex flex-col items-center min-w-0">
+                <span className="font-bold text-green-600">{data.status.departure.code}</span>
+                <span className="text-gray-500 truncate w-full text-center">{data.status.departure.city}</span>
+              </div>
+              
+              <div className="flex-1 mx-3">
+                <div className="text-center mb-1">
+                  <span className="text-xs font-medium text-blue-600">{data.status.progress}%</span>
+                  {data.status.live && (
+                    <span className="ml-1 text-xs text-green-500 animate-pulse">● LIVE</span>
+                  )}
+                </div>
+                <AnimatedAirplane progress={data.status.progress} isLive={data.status.live} />
+              </div>
+              
+              <div className="flex flex-col items-center min-w-0">
+                <span className="font-bold text-red-600">{data.status.arrival.code}</span>
+                <span className="text-gray-500 truncate w-full text-center">{data.status.arrival.city}</span>
+              </div>
             </div>
           </div>
 
-          {/* Key Flight Info */}
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Departure</p>
-              <p className="font-semibold">{formatTime(data.status.departure.scheduledTime)}</p>
+          {/* Compact Flight Info Grid */}
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-xs text-gray-600">Departure</p>
+              <p className="font-semibold text-sm">{formatTime(data.status.departure.scheduledTime)}</p>
               <p className="text-xs text-gray-500">Gate {data.status.departure.gate}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Arrival</p>
-              <p className="font-semibold">{formatTime(data.status.arrival.scheduledTime)}</p>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-xs text-gray-600">Arrival</p>
+              <p className="font-semibold text-sm">{formatTime(data.status.arrival.scheduledTime)}</p>
               <p className="text-xs text-gray-500">Gate {data.status.arrival.gate}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Duration</p>
-              <p className="font-semibold">
-                {Math.floor(data.status.duration / 60)}h {data.status.duration % 60}m
-              </p>
-              <p className="text-xs text-gray-500">{data.status.distance} km</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Aircraft</p>
-              <p className="font-semibold">{data.aircraft.model}</p>
-              <p className="text-xs text-gray-500">{data.aircraft.registration}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-muted p-1 rounded-lg">
+      {/* Compact Tabs */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
         {['overview', 'route', 'aircraft', 'status'].map((tab) => (
           <Button
             key={tab}
             variant={activeTab === tab ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab(tab)}
-            className="flex-1 capitalize"
+            className="flex-1 text-xs h-8 capitalize"
           >
             {tab}
           </Button>
@@ -428,167 +475,158 @@ export function FlightSection({ tool }: FlightSectionProps) {
       </div>
 
       {activeTab === 'overview' && (
-        <div className="space-y-4">
-          {/* Live Flight Data */}
+        <div className="space-y-3">
+          {/* Live Flight Data - Compact */}
           {data.status.live && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Plane className="h-5 w-5 animate-pulse text-blue-500" />
-                  <span>Live Flight Data</span>
-                  {soundEnabled && (
-                    <span className="text-xs text-blue-500 animate-pulse">♪ Engine Sound</span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <Gauge className="h-6 w-6 mx-auto text-blue-500 mb-2" />
-                    <p className="text-sm text-gray-600">Altitude</p>
-                    <p className="font-semibold">{data.status.aircraft.altitude.toLocaleString()} ft</p>
+            <Card className="border border-blue-200 bg-blue-50">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Plane className="h-4 w-4 text-blue-500 animate-pulse" />
+                    <span className="text-sm font-medium">Live Data</span>
+                    {isPlaying && (
+                      <span className="text-xs text-blue-500 animate-pulse">♪</span>
+                    )}
                   </div>
-                  <div className="text-center">
-                    <Gauge className="h-6 w-6 mx-auto text-green-500 mb-2" />
-                    <p className="text-sm text-gray-600">Speed</p>
-                    <p className="font-semibold">{Math.round(data.status.aircraft.speed)} km/h</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleCardExpansion('live')}
+                    className="h-6 w-6 p-0"
+                  >
+                    {expandedCard === 'live' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center bg-white rounded p-2">
+                    <Gauge className="h-4 w-4 mx-auto text-blue-500 mb-1" />
+                    <p className="text-xs text-gray-600">Altitude</p>
+                    <p className="font-semibold text-sm">{data.status.aircraft.altitude.toLocaleString()}</p>
                   </div>
-                  <div className="text-center">
-                    <Compass className="h-6 w-6 mx-auto text-purple-500 mb-2" />
-                    <p className="text-sm text-gray-600">Heading</p>
-                    <p className="font-semibold">{data.status.aircraft.heading}°</p>
-                  </div>
-                  <div className="text-center">
-                    <MapPin className="h-6 w-6 mx-auto text-red-500 mb-2" />
-                    <p className="text-sm text-gray-600">Position</p>
-                    <p className="font-semibold text-xs">
-                      {data.status.aircraft.currentPosition.lat.toFixed(2)}, {data.status.aircraft.currentPosition.lon.toFixed(2)}
-                    </p>
+                  <div className="text-center bg-white rounded p-2">
+                    <Gauge className="h-4 w-4 mx-auto text-green-500 mb-1" />
+                    <p className="text-xs text-gray-600">Speed</p>
+                    <p className="font-semibold text-sm">{Math.round(data.status.aircraft.speed)}</p>
                   </div>
                 </div>
+                
+                {expandedCard === 'live' && (
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div className="text-center bg-white rounded p-2">
+                      <Compass className="h-4 w-4 mx-auto text-purple-500 mb-1" />
+                      <p className="text-xs text-gray-600">Heading</p>
+                      <p className="font-semibold text-sm">{data.status.aircraft.heading}°</p>
+                    </div>
+                    <div className="text-center bg-white rounded p-2">
+                      <MapPin className="h-4 w-4 mx-auto text-red-500 mb-1" />
+                      <p className="text-xs text-gray-600">Position</p>
+                      <p className="font-semibold text-xs">
+                        {data.status.aircraft.currentPosition.lat.toFixed(2)}, {data.status.aircraft.currentPosition.lon.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
 
-          {/* Flight Analysis */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Flight Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start space-x-4 mb-4">
-                <Badge className={getStatusColor(data.status.status)}>
-                  {data.analysis.phase}
-                </Badge>
-                <Badge variant="outline">
-                  {data.analysis.onTime ? 'On Schedule' : 'Delayed'}
-                </Badge>
+          {/* Flight Analysis - Compact */}
+          <Card className="border border-gray-200">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium">Analysis</h3>
+                <div className="flex items-center space-x-1">
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">
+                    {data.analysis.phase}
+                  </Badge>
+                  <Badge variant="outline" className={`text-xs px-2 py-0.5 ${data.analysis.onTime ? 'border-green-500 text-green-700' : 'border-red-500 text-red-700'}`}>
+                    {data.analysis.onTime ? 'On Time' : 'Delayed'}
+                  </Badge>
+                </div>
               </div>
-              <p className="text-gray-700">{data.analysis.summary}</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{data.analysis.summary}</p>
             </CardContent>
           </Card>
         </div>
       )}
 
       {activeTab === 'route' && (
-        <div className="space-y-4">
-          {/* Departure Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <PlaneTakeoff className="h-5 w-5 text-green-500" />
-                <span>Departure</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+        <div className="space-y-3">
+          {/* Departure & Arrival - Side by Side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Card className="border border-green-200 bg-green-50">
+              <CardContent className="p-3">
+                <div className="flex items-center space-x-2 mb-2">
+                  <PlaneTakeoff className="h-4 w-4 text-green-600" />
+                  <span className="text-sm font-medium">Departure</span>
+                </div>
                 <div>
-                  <h3 className="font-semibold text-lg">{data.status.departure.name}</h3>
-                  <p className="text-gray-600">{data.status.departure.city}, {data.status.departure.country}</p>
-                  <p className="text-sm text-gray-500">Airport Code: {data.status.departure.code}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Scheduled</p>
-                    <p className="font-medium">{formatTime(data.status.departure.scheduledTime)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Estimated</p>
-                    <p className="font-medium">{formatTime(data.status.departure.estimatedTime)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Gate</p>
-                    <p className="font-medium">{data.status.departure.gate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Terminal</p>
-                    <p className="font-medium">{data.status.departure.terminal}</p>
+                  <h3 className="font-semibold text-sm truncate">{data.status.departure.name}</h3>
+                  <p className="text-xs text-gray-600">{data.status.departure.city}, {data.status.departure.country}</p>
+                  <p className="text-xs text-gray-500 mb-2">Code: {data.status.departure.code}</p>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p className="text-gray-600">Scheduled</p>
+                      <p className="font-medium">{formatTime(data.status.departure.scheduledTime)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Gate</p>
+                      <p className="font-medium">{data.status.departure.gate}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Arrival Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <PlaneLanding className="h-5 w-5 text-red-500" />
-                <span>Arrival</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <Card className="border border-red-200 bg-red-50">
+              <CardContent className="p-3">
+                <div className="flex items-center space-x-2 mb-2">
+                  <PlaneLanding className="h-4 w-4 text-red-600" />
+                  <span className="text-sm font-medium">Arrival</span>
+                </div>
                 <div>
-                  <h3 className="font-semibold text-lg">{data.status.arrival.name}</h3>
-                  <p className="text-gray-600">{data.status.arrival.city}, {data.status.arrival.country}</p>
-                  <p className="text-sm text-gray-500">Airport Code: {data.status.arrival.code}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Scheduled</p>
-                    <p className="font-medium">{formatTime(data.status.arrival.scheduledTime)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Estimated</p>
-                    <p className="font-medium">{formatTime(data.status.arrival.estimatedTime)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Gate</p>
-                    <p className="font-medium">{data.status.arrival.gate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Terminal</p>
-                    <p className="font-medium">{data.status.arrival.terminal}</p>
+                  <h3 className="font-semibold text-sm truncate">{data.status.arrival.name}</h3>
+                  <p className="text-xs text-gray-600">{data.status.arrival.city}, {data.status.arrival.country}</p>
+                  <p className="text-xs text-gray-500 mb-2">Code: {data.status.arrival.code}</p>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p className="text-gray-600">Scheduled</p>
+                      <p className="font-medium">{formatTime(data.status.arrival.scheduledTime)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Gate</p>
+                      <p className="font-medium">{data.status.arrival.gate}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Route Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Route Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">Distance</p>
-                  <p className="text-2xl font-bold text-blue-600">{data.status.distance}</p>
-                  <p className="text-sm text-gray-500">kilometers</p>
+          {/* Route Stats */}
+          <Card className="border border-gray-200">
+            <CardContent className="p-3">
+              <h3 className="text-sm font-medium mb-3">Route Details</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center bg-blue-50 rounded-lg p-2">
+                  <p className="text-xs text-gray-600">Distance</p>
+                  <p className="text-lg font-bold text-blue-600">{data.status.distance}</p>
+                  <p className="text-xs text-gray-500">km</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">Flight Time</p>
-                  <p className="text-2xl font-bold text-green-600">
+                <div className="text-center bg-green-50 rounded-lg p-2">
+                  <p className="text-xs text-gray-600">Duration</p>
+                  <p className="text-lg font-bold text-green-600">
                     {Math.floor(data.status.duration / 60)}h {data.status.duration % 60}m
                   </p>
-                  <p className="text-sm text-gray-500">scheduled</p>
+                  <p className="text-xs text-gray-500">scheduled</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">Progress</p>
-                  <p className="text-2xl font-bold text-purple-600">{data.status.progress}%</p>
-                  <p className="text-sm text-gray-500">complete</p>
+                <div className="text-center bg-purple-50 rounded-lg p-2">
+                  <p className="text-xs text-gray-600">Progress</p>
+                  <p className="text-lg font-bold text-purple-600">{data.status.progress}%</p>
+                  <p className="text-xs text-gray-500">complete</p>
                 </div>
               </div>
             </CardContent>
@@ -597,119 +635,101 @@ export function FlightSection({ tool }: FlightSectionProps) {
       )}
 
       {activeTab === 'aircraft' && (
-        <div className="space-y-4">
-          {/* Aircraft Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Plane className="h-5 w-5" />
-                <span>Aircraft Information</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Aircraft Type</p>
-                    <p className="font-semibold text-lg">{data.aircraft.type}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Registration</p>
-                    <p className="font-medium">{data.aircraft.registration}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Manufacturer</p>
-                    <p className="font-medium">{data.aircraft.manufacturer}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Model</p>
-                    <p className="font-medium">{data.aircraft.model}</p>
-                  </div>
+        <Card className="border border-gray-200">
+          <CardContent className="p-3">
+            <div className="flex items-center space-x-2 mb-3">
+              <Plane className="h-4 w-4" />
+              <span className="text-sm font-medium">Aircraft Information</span>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 rounded-lg p-2">
+                  <p className="text-xs text-gray-600">Type</p>
+                  <p className="font-semibold text-sm">{data.status.aircraft.type}</p>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Passenger Capacity</p>
-                    <p className="font-medium flex items-center">
-                      <Users className="h-4 w-4 mr-2" />
-                      {data.aircraft.capacity} passengers
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Cruise Speed</p>
-                    <p className="font-medium">{data.aircraft.speed} km/h</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Range</p>
-                    <p className="font-medium">{data.aircraft.range} km</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Airline</p>
-                    <p className="font-medium">{data.aircraft.airline}</p>
-                  </div>
+                <div className="bg-gray-50 rounded-lg p-2">
+                  <p className="text-xs text-gray-600">Registration</p>
+                  <p className="font-semibold text-sm">{data.status.aircraft.registration}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              
+              {data.aircraft && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 rounded-lg p-2">
+                    <p className="text-xs text-gray-600">Capacity</p>
+                    <p className="font-semibold text-sm flex items-center">
+                      <Users className="h-3 w-3 mr-1" />
+                      {data.aircraft.capacity}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-2">
+                    <p className="text-xs text-gray-600">Cruise Speed</p>
+                    <p className="font-semibold text-sm">{data.aircraft.speed} km/h</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {activeTab === 'status' && (
-        <div className="space-y-4">
-          {/* Flight Status Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Clock className="h-5 w-5" />
-                <span>Flight Timeline</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                    <Clock className="h-4 w-4 text-green-600" />
+        <div className="space-y-3">
+          {/* Flight Timeline */}
+          <Card className="border border-gray-200">
+            <CardContent className="p-3">
+              <div className="flex items-center space-x-2 mb-3">
+                <Clock className="h-4 w-4" />
+                <span className="text-sm font-medium">Timeline</span>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center space-x-3 p-2 bg-green-50 rounded-lg">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
+                    <Clock className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Scheduled Departure</p>
-                    <p className="text-sm text-gray-600">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">Departure</p>
+                    <p className="text-xs text-gray-600 truncate">
                       {formatTime(data.status.departure.scheduledTime)} from {data.status.departure.code}
                     </p>
                   </div>
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="text-xs">
                     {formatDate(data.status.departure.scheduledTime)}
                   </Badge>
                 </div>
 
-                <div className={`flex items-center space-x-4 p-3 rounded-lg ${
-                  data.status.status === 'In Flight' ? 'bg-blue-50' : 'bg-gray-50'
+                <div className={`flex items-center space-x-3 p-2 rounded-lg ${
+                  data.status.status === 'active' ? 'bg-blue-50' : 'bg-gray-50'
                 }`}>
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                    data.status.status === 'In Flight' ? 'bg-blue-100' : 'bg-gray-100'
+                  <div className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                    data.status.status === 'active' ? 'bg-blue-100' : 'bg-gray-100'
                   }`}>
-                    <Plane className={`h-4 w-4 ${
-                      data.status.status === 'In Flight' ? 'text-blue-600' : 'text-gray-600'
+                    <Plane className={`h-3 w-3 ${
+                      data.status.status === 'active' ? 'text-blue-600' : 'text-gray-600'
                     }`} />
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Current Status</p>
-                    <p className="text-sm text-gray-600">{data.status.status}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">Status</p>
+                    <p className="text-xs text-gray-600">{data.status.status}</p>
                   </div>
-                  <Badge className={getStatusColor(data.status.status)}>
-                    {data.status.progress}% Complete
+                  <Badge className={`text-xs ${getStatusColor(data.status.status)}`}>
+                    {data.status.progress}%
                   </Badge>
                 </div>
 
-                <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
-                    <Clock className="h-4 w-4 text-red-600" />
+                <div className="flex items-center space-x-3 p-2 bg-red-50 rounded-lg">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100">
+                    <Clock className="h-3 w-3 text-red-600" />
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Scheduled Arrival</p>
-                    <p className="text-sm text-gray-600">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">Arrival</p>
+                    <p className="text-xs text-gray-600 truncate">
                       {formatTime(data.status.arrival.scheduledTime)} at {data.status.arrival.code}
                     </p>
                   </div>
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="text-xs">
                     {formatDate(data.status.arrival.scheduledTime)}
                   </Badge>
                 </div>
@@ -719,26 +739,22 @@ export function FlightSection({ tool }: FlightSectionProps) {
 
           {/* Delay Information */}
           {data.status.delay !== 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5" />
-                  <span>Delay Information</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={`p-4 rounded-lg ${
-                  data.status.delay > 0 ? 'bg-red-50' : 'bg-blue-50'
-                }`}>
-                  <p className={`font-semibold ${getDelayColor(data.status.delay)}`}>
-                    {getDelayText(data.status.delay)}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {data.status.delay > 0 
-                      ? 'Flight is running behind schedule'
-                      : 'Flight is ahead of schedule'
-                    }
-                  </p>
+            <Card className={`border ${data.status.delay > 0 ? 'border-red-200 bg-red-50' : 'border-blue-200 bg-blue-50'}`}>
+              <CardContent className="p-3">
+                <h3 className="text-sm font-medium mb-2">Delay Information</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`font-semibold text-sm ${getDelayColor(data.status.delay)}`}>
+                      {getDelayText(data.status.delay)}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {data.status.delay > 0 
+                        ? 'Behind schedule'
+                        : 'Ahead of schedule'
+                      }
+                    </p>
+                  </div>
+                  <Clock className={`h-5 w-5 ${data.status.delay > 0 ? 'text-red-500' : 'text-blue-500'}`} />
                 </div>
               </CardContent>
             </Card>
@@ -746,10 +762,10 @@ export function FlightSection({ tool }: FlightSectionProps) {
         </div>
       )}
 
-      {/* Metadata */}
-      <div className="text-xs text-gray-500 text-center">
-        Last updated: {format(new Date(data.timestamp), 'MMM dd, yyyy HH:mm:ss')} • 
-        Flight Date: {data.date} • 
+      {/* Compact Metadata */}
+      <div className="text-xs text-gray-400 text-center py-2 border-t border-gray-100">
+        Updated: {format(new Date(data.timestamp), 'HH:mm:ss')} • 
+        {data.date} • 
         {data.status.live && <span className="text-blue-500 animate-pulse">● LIVE</span>}
       </div>
     </div>

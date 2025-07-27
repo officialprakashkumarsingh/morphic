@@ -23,19 +23,15 @@ export function createScreenshotAnalysisTool() {
       try {
         console.log('Starting OCR text extraction on image:', imageUrl)
         
-        // Create Tesseract worker with timeout
-        worker = await Promise.race([
-          createWorker('eng'),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('OCR worker creation timeout')), 15000)
-          )
-        ]) as any
+        // Create Tesseract worker with minimal settings for speed
+        worker = await createWorker('eng')
         
-        // Perform OCR on the image with timeout
+        // Perform OCR on the image
+        console.log('Starting OCR recognition...')
         const ocrResult = await Promise.race([
           worker.recognize(imageUrl),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('OCR processing timeout (this may take a while for complex images)')), 30000)
+            setTimeout(() => reject(new Error('OCR processing timeout - image may be too complex')), 20000)
           )
         ]) as any
         
@@ -114,19 +110,51 @@ export function createScreenshotAnalysisTool() {
         return JSON.stringify(result)
         
       } catch (error) {
-        console.error('OCR extraction failed:', error)
+        console.error('Primary OCR extraction failed:', error)
         
-        const errorResult = {
-          type: 'screenshot_analysis',
-          imageUrl,
-          extractedText: '',
-          confidence: 0,
-          analysis: `❌ Screenshot analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\n🔄 Possible reasons:\n• Image quality too low\n• Text too small or blurry\n• Complex fonts or styling\n• Network connection issues\n• Processing timeout\n\nTip: Try with a higher quality image or simpler text content.`,
-          timestamp: new Date().toISOString(),
-          status: 'error'
+        // Try a simpler OCR approach as fallback
+        try {
+          console.log('Attempting simplified OCR fallback...')
+          
+          if (worker) {
+            await worker.terminate()
+          }
+          
+          // Create a new simple worker
+          worker = await createWorker('eng')
+          const simpleResult = await worker.recognize(imageUrl)
+          
+          const fallbackAnalysis = `🔍 Screenshot Analysis (Simplified):\n\n✅ Fallback OCR completed\n⚠️ Primary analysis failed, using simplified method\n\n📄 Extracted Text:\n"${simpleResult.data.text || 'No text detected'}"\n\n💡 Note: This is a simplified analysis. For better results, try with a clearer image.`
+          
+          const result = {
+            type: 'screenshot_analysis',
+            imageUrl,
+            extractedText: simpleResult.data.text || '',
+            confidence: Math.round(simpleResult.data.confidence || 0),
+            wordCount: (simpleResult.data.text || '').split(/\s+/).length,
+            lineCount: (simpleResult.data.text || '').split('\n').length,
+            analysis: fallbackAnalysis,
+            timestamp: new Date().toISOString(),
+            status: 'success'
+          }
+          
+          return JSON.stringify(result)
+          
+        } catch (fallbackError) {
+          console.error('Fallback OCR also failed:', fallbackError)
+          
+          const errorResult = {
+            type: 'screenshot_analysis',
+            imageUrl,
+            extractedText: '',
+            confidence: 0,
+            analysis: `❌ Screenshot analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\n🔄 Both primary and fallback OCR methods failed.\n\nPossible reasons:\n• Image quality too low for text recognition\n• No readable text in the image\n• Network connection issues\n• Server processing limitations\n\n💡 Tips:\n• Try with a different screenshot\n• Ensure the image contains clear, readable text\n• Check your internet connection`,
+            timestamp: new Date().toISOString(),
+            status: 'error'
+          }
+          
+          return JSON.stringify(errorResult)
         }
-        
-        return JSON.stringify(errorResult)
       } finally {
         // Clean up the worker
         if (worker) {

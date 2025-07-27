@@ -250,32 +250,7 @@ export function ScreenshotSection({ tool, isOpen, onOpenChange }: ScreenshotSect
 
 
 
-                    {/* Screenshot Details */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-medium mb-3">Screenshot Details</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">URL:</span>
-                            <p className="break-all">{data.url}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Dimensions:</span>
-                            <p>{data.width}×{data.height}px</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Full Page:</span>
-                            <p>{data.fullPage ? 'Yes' : 'No'}</p>
-                          </div>
-                          {data.timestamp && (
-                            <div>
-                              <span className="text-muted-foreground">Captured:</span>
-                              <p>{new Date(data.timestamp).toLocaleString()}</p>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+
                   </div>
                 </Section>
               </>

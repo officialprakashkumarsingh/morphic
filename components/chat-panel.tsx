@@ -127,7 +127,7 @@ export function ChatPanel({
       )}
       <form
         onSubmit={handleSubmit}
-        className={cn('max-w-3xl w-full mx-auto relative')}
+        className={cn('max-w-3xl w-full mx-auto relative', 'mr-4 sm:mr-0')}
       >
         {/* Scroll to bottom button - only shown when showScrollToBottomButton is true */}
         {showScrollToBottomButton && messages.length > 0 && (

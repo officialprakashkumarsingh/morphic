@@ -127,9 +127,9 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
         // Get all slides
         const slides = tempContainer.querySelectorAll('.reveal .slides section')
         const pdf = new jsPDF({
-          orientation: 'landscape',
-          unit: 'px',
-          format: [1920, 1080],
+          orientation: 'portrait',
+          unit: 'pt',
+          format: 'a4',
           compress: true
         })
         
@@ -142,23 +142,24 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
             const slideIndex = i + j
             const slide = batch[j] as HTMLElement
             
-            // Make slide visible and positioned
+            // Make slide visible and positioned for A4 portrait
             slide.style.display = 'block'
             slide.style.position = 'relative'
-            slide.style.width = '1920px'
-            slide.style.height = '1080px'
-            slide.style.padding = '60px'
+            slide.style.width = '595px'  // A4 width in points
+            slide.style.height = '842px' // A4 height in points
+            slide.style.padding = '40px'
             slide.style.boxSizing = 'border-box'
             slide.style.visibility = 'visible'
             slide.style.background = '#ffffff'
+            slide.style.fontSize = '12px'
             
             // Force repaint
             slide.offsetHeight
             
-            // Generate canvas for the slide with enhanced options
+            // Generate canvas for the slide with A4 dimensions
             const canvas = await html2canvas.default(slide, {
-              width: 1920,
-              height: 1080,
+              width: 595,
+              height: 842,
               scale: 1,
               useCORS: true,
               allowTaint: false,
@@ -180,8 +181,8 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
               pdf.addPage()
             }
             
-            // Add image to PDF with proper sizing
-            pdf.addImage(imgData, 'JPEG', 0, 0, 1920, 1080)
+            // Add image to PDF with A4 dimensions
+            pdf.addImage(imgData, 'JPEG', 0, 0, 595, 842)
           }
           
           // Allow UI to breathe between batches
@@ -295,44 +296,44 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
         html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         
         .reveal .slides {
-          width: 1920px !important;
-          height: 1080px !important;
+          width: 595px !important;
+          height: 842px !important;
         }
         .reveal .slides section {
-          width: 1920px !important;
-          height: 1080px !important;
-          padding: 60px !important;
+          width: 595px !important;
+          height: 842px !important;
+          padding: 40px !important;
           box-sizing: border-box !important;
           display: flex !important;
           flex-direction: column !important;
-          justify-content: center !important;
-          text-align: center !important;
+          justify-content: flex-start !important;
+          text-align: left !important;
           font-family: Arial, sans-serif !important;
           color: #333 !important;
           background: #ffffff !important;
         }
         .reveal h1 {
-          font-size: 3.5em !important;
-          margin-bottom: 0.5em !important;
+          font-size: 18pt !important;
+          margin-bottom: 12pt !important;
           color: #333 !important;
           font-weight: bold !important;
         }
         .reveal h2 {
-          font-size: 2.8em !important;
-          margin-bottom: 0.5em !important;
+          font-size: 16pt !important;
+          margin-bottom: 10pt !important;
           color: #333 !important;
           font-weight: bold !important;
         }
         .reveal h3 {
-          font-size: 2.2em !important;
-          margin-bottom: 0.4em !important;
+          font-size: 14pt !important;
+          margin-bottom: 8pt !important;
           color: #333 !important;
           font-weight: bold !important;
         }
         .reveal p, .reveal li {
-          font-size: 1.8em !important;
+          font-size: 12pt !important;
           line-height: 1.4 !important;
-          margin-bottom: 0.5em !important;
+          margin-bottom: 6pt !important;
           color: #333 !important;
         }
         .reveal ul, .reveal ol {

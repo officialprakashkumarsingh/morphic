@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
+import Image from 'next/image'
 
 import { ToolInvocation } from 'ai'
 import { Copy, Download, Edit, ExternalLink } from 'lucide-react'
-import mermaid from 'mermaid'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -26,8 +26,9 @@ interface DiagramResult {
   diagramType?: string
   title?: string
   description?: string
-  mermaidCode?: string
+  plantUMLCode?: string
   renderUrl?: string
+  svgUrl?: string
   editUrl?: string
   message?: string
   attempts?: number
@@ -36,84 +37,46 @@ interface DiagramResult {
 }
 
 export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionProps) {
-  const diagramRef = useRef<HTMLDivElement>(null)
-  const [isRendered, setIsRendered] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageError, setImageError] = useState(false)
   
   const data: DiagramResult | undefined =
     tool.state === 'result' ? tool.result : undefined
 
-  useEffect(() => {
-    // Initialize mermaid with enhanced styling
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'base',
-      securityLevel: 'loose',
-      fontFamily: "'Inter', 'Segoe UI', 'Arial', sans-serif",
-      themeVariables: {
-        primaryColor: '#3b82f6',
-        primaryTextColor: '#1e293b',
-        primaryBorderColor: '#e2e8f0',
-        lineColor: '#64748b',
-        secondaryColor: '#f1f5f9',
-        tertiaryColor: '#f8fafc',
-        background: '#ffffff',
-        mainBkg: '#ffffff',
-        secondBkg: '#f8fafc',
-        tertiaryBkg: '#f1f5f9'
-      }
-    })
-  }, [])
-
-  useEffect(() => {
-    const renderDiagram = async () => {
-      if (data?.mermaidCode && diagramRef.current && !isRendered) {
-        try {
-          const { svg } = await mermaid.render(
-            `diagram-${tool.toolCallId}`,
-            data.mermaidCode
-          )
-          diagramRef.current.innerHTML = svg
-          setIsRendered(true)
-        } catch (error) {
-          console.error('Failed to render mermaid diagram:', error)
-          diagramRef.current.innerHTML = `
-            <div class="text-red-500 p-4 border border-red-200 rounded">
-              Failed to render diagram: ${error instanceof Error ? error.message : 'Unknown error'}
-            </div>
-          `
-        }
-      }
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch (err) {
+      console.error('Failed to copy: ', err)
     }
-
-    if (isOpen && data?.mermaidCode) {
-      renderDiagram()
-    }
-  }, [isOpen, data?.mermaidCode, tool.toolCallId, isRendered])
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
   }
 
-  const downloadSVG = () => {
-    if (diagramRef.current) {
-      const svg = diagramRef.current.querySelector('svg')
-      if (svg) {
-        const svgData = new XMLSerializer().serializeToString(svg)
-        const blob = new Blob([svgData], { type: 'image/svg+xml' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${data?.title || 'diagram'}.svg`
-        a.click()
-        URL.revokeObjectURL(url)
-      }
+  const downloadDiagram = () => {
+    if (data?.svgUrl) {
+      // Download SVG version
+      const link = document.createElement('a')
+      link.href = data.svgUrl
+      link.download = `${data.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'diagram'}.svg`
+      link.click()
+    } else if (data?.renderUrl) {
+      // Download PNG version
+      const link = document.createElement('a')
+      link.href = data.renderUrl
+      link.download = `${data.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'diagram'}.png`
+      link.click()
+    }
+  }
+
+  const openFullSize = () => {
+    if (data?.renderUrl) {
+      window.open(data.renderUrl, '_blank')
     }
   }
 
   const header = (
     <div className="flex items-center gap-2">
       <ToolBadge tool="diagram">
-        {data?.type === 'error' ? 'Error' : 'Diagram'}
+        {data?.type === 'error' ? 'Error' : 'PlantUML Diagram'}
       </ToolBadge>
       {data?.diagramType && (
         <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
@@ -156,7 +119,7 @@ export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionPro
           <p className="text-sm text-muted-foreground mb-4">{data.description}</p>
         )}
 
-                {/* Auto-correction warnings */}
+        {/* Auto-correction warnings */}
         {data?.warnings && data.warnings.length > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
             <h4 className="text-sm font-medium text-amber-900 mb-2">
@@ -173,86 +136,133 @@ export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionPro
           </div>
         )}
 
-        {data?.mermaidCode && (
+        {data?.renderUrl && (
           <Card>
             <CardContent className="p-6">
               {/* Diagram Render Area */}
-              <div
-                ref={diagramRef}
-                className="w-full overflow-x-auto flex justify-center items-center min-h-[300px] bg-gradient-to-br from-slate-50 to-white rounded-lg border border-slate-200 shadow-inner p-4"
-                style={{
-                  fontFamily: "'Inter', 'Segoe UI', 'Arial', sans-serif"
-                }}
-              />
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(data.mermaidCode!)}
+              <div className="w-full overflow-x-auto flex justify-center items-center min-h-[300px] bg-gradient-to-br from-slate-50 to-white rounded-lg border border-slate-200 shadow-inner p-4 relative">
+                {!imageLoaded && !imageError && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  </div>
+                )}
+                
+                {imageError ? (
+                  <div className="text-red-500 text-center">
+                    <p>Failed to load diagram</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {
+                        setImageError(false)
+                        setImageLoaded(false)
+                      }}
+                      className="mt-2"
                     >
-                      <Copy className="h-4 w-4" />
+                      Retry
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Copy Mermaid Code</TooltipContent>
-                </Tooltip>
+                  </div>
+                ) : (
+                  <Image
+                    src={data.renderUrl}
+                    alt={data.title || 'Generated Diagram'}
+                    width={800}
+                    height={600}
+                    className={`max-w-full h-auto transition-opacity duration-300 ${
+                      imageLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    onLoad={() => setImageLoaded(true)}
+                    onError={() => {
+                      setImageError(true)
+                      setImageLoaded(false)
+                    }}
+                    unoptimized
+                  />
+                )}
+              </div>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={downloadSVG}>
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Download SVG</TooltipContent>
-                </Tooltip>
+              <Separator className="my-4" />
 
-                {data.editUrl && (
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(data.editUrl, '_blank')}
+                        onClick={() => copyToClipboard(data?.plantUMLCode || '')}
+                        className="flex-shrink-0"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Copy className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Copy Code</span>
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Edit in Mermaid Live</TooltipContent>
+                    <TooltipContent>Copy PlantUML Code</TooltipContent>
                   </Tooltip>
-                )}
 
-                {data.renderUrl && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(data.renderUrl, '_blank')}
+                        onClick={downloadDiagram}
+                        className="flex-shrink-0"
                       >
-                        <ExternalLink className="h-4 w-4" />
+                        <Download className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Download</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Download Diagram</TooltipContent>
+                  </Tooltip>
+
+                  {data?.editUrl && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(data.editUrl, '_blank')}
+                          className="flex-shrink-0"
+                        >
+                          <Edit className="h-4 w-4 sm:mr-1" />
+                          <span className="hidden sm:inline">Edit</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit in PlantUML Editor</TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={openFullSize}
+                        className="flex-shrink-0"
+                      >
+                        <ExternalLink className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Full Size</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>View Full Size</TooltipContent>
                   </Tooltip>
-                )}
-              </TooltipProvider>
-            </div>
+                </TooltipProvider>
+              </div>
 
-            {/* Mermaid Code Display */}
-            <details className="mt-4">
-              <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
-                View Mermaid Code
-              </summary>
-              <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-x-auto">
-                <code>{data.mermaidCode}</code>
-              </pre>
-            </details>
-          </CardContent>
-        </Card>
+              {/* PlantUML Code Display */}
+              {data?.plantUMLCode && (
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                    View PlantUML Source
+                  </summary>
+                  <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-x-auto max-w-full">
+                    <code>{data.plantUMLCode}</code>
+                  </pre>
+                </details>
+              )}
+            </CardContent>
+          </Card>
         )}
       </Section>
     </CollapsibleMessage>

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Film, Link, Presentation, Search, Workflow } from 'lucide-react'
+import { BarChart3,Film, Link, Search, Workflow } from 'lucide-react'
 
 import { Badge } from './ui/badge'
 
@@ -20,7 +20,7 @@ export const ToolBadge: React.FC<ToolBadgeProps> = ({
     retrieve: <Link size={14} />,
     videoSearch: <Film size={14} />,
     diagram: <Workflow size={14} />,
-    presentation: <Presentation size={14} />
+    chart: <BarChart3 size={14} />
   }
 
   return (

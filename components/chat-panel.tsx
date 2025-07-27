@@ -115,14 +115,19 @@ export function ChatPanel({
   return (
     <div
       className={cn(
-        'fixed bottom-0 right-0 w-full bg-background/95 backdrop-blur border-t border-border/10 group/form-container shrink-0 px-2 pb-4 pt-2 z-40',
-        open ? 'md:left-[var(--sidebar-width)]' : 'left-0'
+        'w-full group/form-container shrink-0',
+        messages.length === 0 
+          ? 'flex items-center justify-center min-h-screen px-6' // Homepage: center positioning
+          : cn(
+              'fixed bottom-0 right-0 bg-background/95 backdrop-blur border-t border-border/10 px-2 pb-4 pt-2 z-40',
+              open ? 'md:left-[var(--sidebar-width)]' : 'left-0'
+            ) // Followback: bottom positioning
       )}
     >
       {messages.length === 0 && (
-        <div className="mb-10 flex flex-col items-center gap-4">
-          <IconLogo className="size-12 text-muted-foreground" />
-          <p className="text-center text-3xl font-semibold">
+        <div className="flex flex-col items-center gap-6 mb-8">
+          <IconLogo className="size-16 text-muted-foreground" />
+          <p className="text-center text-4xl font-semibold">
             How can I help you today?
           </p>
         </div>

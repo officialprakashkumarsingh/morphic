@@ -41,12 +41,24 @@ export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionPro
     tool.state === 'result' ? tool.result : undefined
 
   useEffect(() => {
-    // Initialize mermaid
+    // Initialize mermaid with enhanced styling
     mermaid.initialize({
       startOnLoad: false,
-      theme: 'neutral',
+      theme: 'base',
       securityLevel: 'loose',
-      fontFamily: 'inherit'
+      fontFamily: "'Inter', 'Segoe UI', 'Arial', sans-serif",
+      themeVariables: {
+        primaryColor: '#3b82f6',
+        primaryTextColor: '#1e293b',
+        primaryBorderColor: '#e2e8f0',
+        lineColor: '#64748b',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#f8fafc',
+        background: '#ffffff',
+        mainBkg: '#ffffff',
+        secondBkg: '#f8fafc',
+        tertiaryBkg: '#f1f5f9'
+      }
     })
   }, [])
 
@@ -148,7 +160,10 @@ export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionPro
             {/* Diagram Render Area */}
             <div
               ref={diagramRef}
-              className="w-full overflow-x-auto flex justify-center items-center min-h-[200px] bg-white rounded border"
+              className="w-full overflow-x-auto flex justify-center items-center min-h-[300px] bg-gradient-to-br from-slate-50 to-white rounded-lg border border-slate-200 shadow-inner p-4"
+              style={{
+                fontFamily: "'Inter', 'Segoe UI', 'Arial', sans-serif"
+              }}
             />
 
             {/* Action Buttons */}

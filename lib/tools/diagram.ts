@@ -37,7 +37,15 @@ export function createDiagramTool(model: string) {
     quadrant-1 Do First
     quadrant-2 Schedule
     quadrant-3 Delegate  
-    quadrant-4 Don't Do`,
+    quadrant-4 Don't Do
+    
+    For mindmaps, use proper indentation (2-4 spaces per level):
+        Topic 1
+          Subtopic 1.1
+            Detail 1.1.1
+          Subtopic 1.2
+        Topic 2
+          Subtopic 2.1`,
     parameters: diagramSchema,
     execute: async ({ type, title, description, content, direction = 'TB' }) => {
       try {
@@ -131,7 +139,7 @@ function generateMermaidCode(type: string, title: string, content: string, direc
     case 'mindmap':
       mermaidCode = `mindmap
   root)${title}(
-    ${formattedContent}`
+${formattedContent}`
       break
       
     case 'timeline':
@@ -203,6 +211,43 @@ export function createSWOTExample(): string {
     quadrant-2 Opportunities
     quadrant-3 Weaknesses
     quadrant-4 Threats`
+}
+
+export function createMindmapExample(): string {
+  return `    Strategy
+      Planning
+        Financial Planning
+        Resource Planning
+      Analysis
+        Market Analysis
+        Risk Analysis
+      Implementation
+        Execution
+        Monitoring`
+}
+
+export function createCapitalBudgetingMindmap(): string {
+  return `    Definition
+      Planning for Capital Expenditures
+      Long-term Investment Decisions
+    Objectives
+      Maximize Shareholder Value
+      Optimal Resource Allocation
+      Risk Management
+    Methods
+      Net Present Value (NPV)
+      Internal Rate of Return (IRR)
+      Payback Period
+      Profitability Index (PI)
+    Process
+      Identifying Investment Opportunities
+      Evaluating Projects
+      Selecting Projects
+      Implementing and Monitoring
+    Importance
+      Ensures Financial Sustainability
+      Supports Strategic Growth
+      Enhances Competitive Advantage`
 }
 
 // Default export for backward compatibility

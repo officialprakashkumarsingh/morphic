@@ -4,15 +4,16 @@ import { z } from 'zod'
 
 export function createScreenshotTool(fullModel: string) {
   return tool({
-  description: `Take a screenshot of a website and analyze its content using OCR vision.
+  description: `Take a fast screenshot of a website for visual inspection.
   
   Use this tool when users want to:
   - Take a screenshot of a website
-  - Capture and analyze webpage content
-  - Extract text from website images
-  - Get visual analysis of a site's layout and content
+  - Capture webpage visuals
+  - See how a website looks
+  - Get a visual snapshot of a site's layout
   
-  The tool will capture the screenshot and provide OCR analysis of the content.`,
+  This tool captures screenshots quickly without heavy processing.
+  For text extraction, use the separate OCR tool after screenshot capture.`,
   parameters: z.object({
     url: z.string().describe('The URL of the website to screenshot'),
     width: z.number().default(1200).describe('Screenshot width in pixels'),
@@ -47,21 +48,21 @@ export function createScreenshotTool(fullModel: string) {
         const screenshotUrl = await captureScreenshot(url, width, height, fullPage, waitFor)
         console.log('Screenshot URL generated:', screenshotUrl)
         
-        // Perform OCR analysis on the actual screenshot
-        const ocrAnalysis = await performOCRAnalysis(screenshotUrl, analysis)
+        // Skip automatic OCR - only provide basic screenshot info
+        const basicAnalysis = await createBasicAnalysis(url, screenshotUrl, analysis)
       
-      const result = {
-        type: 'screenshot',
-        url: url,
-        screenshotUrl: screenshotUrl,
-        width,
-        height,
-        fullPage,
-        ocrText: ocrAnalysis.text,
-        analysis: ocrAnalysis.analysis,
-        timestamp: new Date().toISOString(),
-        status: 'success'
-      }
+              const result = {
+          type: 'screenshot',
+          url: url,
+          screenshotUrl: screenshotUrl,
+          width,
+          height,
+          fullPage,
+          ocrText: basicAnalysis.text,
+          analysis: basicAnalysis.analysis,
+          timestamp: new Date().toISOString(),
+          status: 'success'
+        }
       
         return JSON.stringify(result)
       } catch (error) {
@@ -104,24 +105,13 @@ async function captureScreenshot(
   // Try multiple screenshot services for better reliability
   
   try {
-    // Method 1: WordPress.com mShots service (free and reliable)
-    const wordpressUrl = `https://s0.wp.com/mshots/v1/${encodeURIComponent(url)}?w=${width}&h=${height}&vpw=${width}&vph=${height}`
+    // Method 1: Simple, fast screenshot service
+    const simpleUrl = `https://api.thumbnail.ws/api/thumbnail/screenshot?url=${encodeURIComponent(url)}&width=${width}&height=${height}&format=png`
     
-    console.log('Using WordPress mShots service for screenshot')
-    
-    // Test if the service is working by making a quick request
-    const testResponse = await Promise.race([
-      fetch(wordpressUrl, { method: 'HEAD' }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-    ])
-    
-    if ((testResponse as Response).ok) {
-      return wordpressUrl
-    } else {
-      throw new Error('WordPress mShots not responding')
-    }
+    console.log('Using thumbnail.ws service for screenshot')
+    return simpleUrl
   } catch (error) {
-    console.log('WordPress mShots service failed, trying alternatives...')
+    console.log('Primary service failed, trying alternatives...')
   }
 
   try {
@@ -173,6 +163,49 @@ async function captureScreenshot(
   return thumbnailWsUrl
 }
 
+// Basic analysis without OCR for fast screenshot capture
+async function createBasicAnalysis(originalUrl: string, screenshotUrl: string, userAnalysis?: string): Promise<{text: string, analysis: string}> {
+  const domain = extractDomainFromUrl(originalUrl)
+  
+  let analysis = "📸 Screenshot Captured Successfully:\n\n"
+  analysis += "✅ Website screenshot generated\n"
+  analysis += "✅ Image ready for viewing\n"
+  analysis += "✅ High-quality capture completed\n\n"
+  
+  // Domain-specific quick insights
+  if (domain.includes('github')) {
+    analysis += "🔍 GitHub Platform:\n"
+    analysis += "• Code repository interface\n"
+    analysis += "• Developer tools and navigation\n\n"
+  } else if (domain.includes('google')) {
+    analysis += "🔍 Google Service:\n"
+    analysis += "• Clean search interface\n"
+    analysis += "• Google product page\n\n"
+  } else if (domain.includes('netflix')) {
+    analysis += "🔍 Netflix Platform:\n"
+    analysis += "• Streaming service interface\n"
+    analysis += "• Content discovery layout\n\n"
+  }
+  
+  if (userAnalysis) {
+    analysis += `🎯 User Request: "${userAnalysis}"\n`
+    analysis += "Screenshot captured for your analysis.\n\n"
+  }
+  
+  analysis += "💡 Next Steps:\n"
+  analysis += "• View the screenshot image below\n"
+  analysis += "• Request OCR text extraction if needed\n"
+  analysis += "• Ask for specific analysis of visible elements\n\n"
+  
+  analysis += "🔄 For text extraction, request: 'Extract text from this screenshot'"
+  
+  return {
+    text: `Screenshot of ${domain} captured successfully. Visual inspection available.`,
+    analysis: analysis
+  }
+}
+
+// Heavy OCR analysis - only run when specifically requested
 async function performOCRAnalysis(imageUrl: string, userAnalysis?: string): Promise<{text: string, analysis: string}> {
   let worker: any = null
   

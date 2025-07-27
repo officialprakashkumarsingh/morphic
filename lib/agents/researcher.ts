@@ -1,12 +1,12 @@
 import { CoreMessage, smoothStream, streamText } from 'ai'
 
 import { createDiagramTool } from '../tools/diagram'
-import { createScreenshotAnalysisTool } from '../tools/ocr'
 import { createPresentationTool } from '../tools/presentation'
 import { createQuestionTool } from '../tools/question'
 import { retrieveTool } from '../tools/retrieve'
 import { createScreenshotTool } from '../tools/screenshot'
 import { createSearchTool } from '../tools/search'
+import { createStockTool } from '../tools/stock'
 import { createVideoSearchTool } from '../tools/video-search'
 import { getModel } from '../utils/registry'
 
@@ -68,7 +68,7 @@ export function researcher({
     const diagramTool = createDiagramTool(model)
     const presentationTool = createPresentationTool(model)
     const screenshotTool = createScreenshotTool(model)
-  const screenshotAnalysisTool = createScreenshotAnalysisTool()
+    const stockTool = createStockTool()
 
     return {
       model: getModel(model),
@@ -82,11 +82,11 @@ export function researcher({
         diagram: diagramTool,
         presentation: presentationTool,
         screenshot: screenshotTool,
-        screenshot_analysis: screenshotAnalysisTool
+        stock: stockTool
       },
       experimental_activeTools: searchMode
-        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram', 'presentation', 'screenshot', 'screenshot_analysis']
-        : ['diagram', 'presentation', 'screenshot', 'screenshot_analysis'],
+        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram', 'presentation', 'screenshot', 'stock']
+        : ['diagram', 'presentation', 'screenshot', 'stock'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()
     }

@@ -4,11 +4,11 @@ import { ToolInvocation } from 'ai'
 
 import { ChartSection } from './chart-section'
 import { DiagramSection } from './diagram-section'
-import { ScreenshotAnalysisSection } from './ocr-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { ScreenshotSection } from './screenshot-section'
 import { SearchSection } from './search-section'
+import { StockSection } from './stock-section'
 import { VideoSearchSection } from './video-search-section'
 
 interface ToolSectionProps {
@@ -107,12 +107,12 @@ export function ToolSection({
           isOpen={isOpen}
           onOpenChange={onOpenChange}
         />
-      )
-    case 'screenshot_analysis':
+              )
+    case 'stock':
       return (
-        <ScreenshotAnalysisSection tool={tool} />
+        <StockSection tool={tool} />
       )
-      default:
-        return null
+        default:
+          return null
   }
 }

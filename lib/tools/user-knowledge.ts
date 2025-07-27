@@ -167,15 +167,15 @@ export function createUserKnowledgeTool() {
               summary: `${recentChats.length} recent chats in the last ${timeRange}`
             } : null,
             insights: {
-              topInsight: totalChats === 0 
+              topInsight: (totalChats || 0) === 0 
                 ? "Welcome to AhamAI! Start your first conversation to begin building your knowledge base." 
-                : totalChats < 5 
+                : (totalChats || 0) < 5 
                 ? "You're getting started! Try exploring different tools to enhance your productivity."
                 : averageMessagesPerChat > 10
                 ? "You have deep conversations! Your chats tend to be comprehensive and detailed."
                 : "You're an efficient communicator! You get straight to the point in your interactions.",
               recommendations: [
-                totalChats > 10 && pinnedChats === 0 ? "Consider pinning important chats for quick access" : null,
+                (totalChats || 0) > 10 && (pinnedChats || 0) === 0 ? "Consider pinning important chats for quick access" : null,
                 averageMessagesPerChat < 3 ? "Try asking follow-up questions to get more detailed responses" : null,
                 (analytics?.total_tools_used || 0) < 5 ? "Explore more tools like stock analysis, crypto tracking, and diagrams" : null,
                 chatsPerDay < 0.5 && accountAge > 7 ? "Regular usage can help you get more value from your AI assistant" : null

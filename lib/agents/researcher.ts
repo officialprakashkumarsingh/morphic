@@ -14,6 +14,13 @@ Instructions:
 
 You are a helpful AI assistant with access to real-time web search, content retrieval, video search, diagram generation, website screenshot capture with OCR analysis, and the ability to ask clarifying questions.
 
+IMPORTANT: You have a screenshot tool available that can capture any website. Use it when users:
+- Ask to take a screenshot of a website
+- Want to see how a website looks
+- Request visual analysis of a webpage
+- Ask about website layout or design
+- Want to capture and analyze web content
+
 When asked a question, you should:
 1. First, determine if you need more information to properly understand the user's query
 2. **If the query is ambiguous or lacks specific details, use the ask_question tool to create a structured question with relevant options**
@@ -76,7 +83,7 @@ export function researcher({
       },
       experimental_activeTools: searchMode
         ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'diagram', 'presentation', 'screenshot']
-        : ['diagram', 'presentation'],
+        : ['diagram', 'presentation', 'screenshot'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()
     }

@@ -26,7 +26,18 @@ export function createDiagramTool(model: string) {
   return tool({
     description: `Generate Mermaid.js diagrams for visual representation of data, processes, relationships, and concepts. 
     Supports flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, user journey maps, 
-    Gantt charts, pie charts, git graphs, mind maps, timelines, and quadrant charts.`,
+    Gantt charts, pie charts, git graphs, mind maps, timelines, and quadrant charts.
+    
+    IMPORTANT: The 'content' parameter should contain properly formatted Mermaid syntax specific to the diagram type.
+    Each line should be separated by actual newlines (\n), not literal \n strings.
+    
+    For quadrant charts, use this exact format:
+    x-axis Low --> High
+    y-axis Urgent --> Not Urgent
+    quadrant-1 Do First
+    quadrant-2 Schedule
+    quadrant-3 Delegate  
+    quadrant-4 Don't Do`,
     parameters: diagramSchema,
     execute: async ({ type, title, description, content, direction = 'TB' }) => {
       try {
@@ -56,52 +67,55 @@ export function createDiagramTool(model: string) {
 function generateMermaidCode(type: string, title: string, content: string, direction: string): string {
   let mermaidCode = ''
   
+  // Ensure content has proper line breaks
+  const formattedContent = content.replace(/\\n/g, '\n').trim()
+  
   switch (type) {
     case 'flowchart':
       mermaidCode = `flowchart ${direction}
     %% ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'sequence':
       mermaidCode = `sequenceDiagram
     title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'class':
       mermaidCode = `classDiagram
     title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'state':
       mermaidCode = `stateDiagram-v2
     title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'erDiagram':
       mermaidCode = `erDiagram
     title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'journey':
       mermaidCode = `journey
     title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'gantt':
       mermaidCode = `gantt
     title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'pie':
       mermaidCode = `pie title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'gitgraph':
@@ -111,31 +125,31 @@ function generateMermaidCode(type: string, title: string, content: string, direc
         themeVariables:
             primaryColor: "#ff0000"
     commit id: "${title}"
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'mindmap':
       mermaidCode = `mindmap
   root)${title}(
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'timeline':
       mermaidCode = `timeline
     title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     case 'quadrant':
       mermaidCode = `quadrantChart
     title ${title}
-    ${content}`
+    ${formattedContent}`
       break
       
     default:
       mermaidCode = `flowchart ${direction}
     %% ${title}
-    ${content}`
+    ${formattedContent}`
   }
   
   return mermaidCode
@@ -171,6 +185,24 @@ export function createClassExample(): string {
         +bark()
     }
     Animal <|-- Dog`
+}
+
+export function createQuadrantExample(): string {
+  return `x-axis Low --> High
+    y-axis Urgent --> Not Urgent
+    quadrant-1 Do First
+    quadrant-2 Schedule
+    quadrant-3 Delegate
+    quadrant-4 Don't Do`
+}
+
+export function createSWOTExample(): string {
+  return `x-axis Internal --> External
+    y-axis Negative --> Positive
+    quadrant-1 Strengths
+    quadrant-2 Opportunities
+    quadrant-3 Weaknesses
+    quadrant-4 Threats`
 }
 
 // Default export for backward compatibility

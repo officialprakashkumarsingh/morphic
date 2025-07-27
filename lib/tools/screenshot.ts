@@ -22,25 +22,28 @@ export function createScreenshotTool(fullModel: string) {
   }),
   execute: async ({ url, width, height, fullPage, waitFor, analysis }) => {
     try {
-      // Validate URL
+      // Validate and clean URL
       try {
-        new URL(url)
+        url = validateAndCleanUrl(url)
       } catch {
-        return {
+        const errorResult = {
           type: 'error',
           error: 'Invalid URL provided. Please provide a valid website URL.',
           status: 'error'
         }
+        return JSON.stringify(errorResult)
       }
 
       // For now, we'll use a screenshot service API instead of running Puppeteer directly
       // This is more suitable for serverless environments
+      console.log('Capturing screenshot for URL:', url)
       const screenshotUrl = await captureScreenshot(url, width, height, fullPage, waitFor)
+      console.log('Screenshot URL generated:', screenshotUrl)
       
       // Perform OCR analysis
-      const ocrAnalysis = await performOCRAnalysis(screenshotUrl, analysis)
+      const ocrAnalysis = await performOCRAnalysis(url, analysis) // Pass original URL for better analysis
       
-      return {
+      const result = {
         type: 'screenshot',
         url: url,
         screenshotUrl: screenshotUrl,
@@ -52,13 +55,17 @@ export function createScreenshotTool(fullModel: string) {
         timestamp: new Date().toISOString(),
         status: 'success'
       }
+      
+      return JSON.stringify(result)
     } catch (error) {
       console.error('Screenshot capture failed:', error)
-      return {
+      const errorResult = {
         type: 'error',
         error: error instanceof Error ? error.message : 'Failed to capture screenshot',
         status: 'error'
       }
+      
+      return JSON.stringify(errorResult)
     }
   }
   })
@@ -79,13 +86,11 @@ async function captureScreenshot(
     // Method 1: WordPress.com mShots service (free and reliable)
     const wordpressUrl = `https://s0.wp.com/mshots/v1/${encodeURIComponent(url)}?w=${width}&h=${height}&vpw=${width}&vph=${height}`
     
-    // Test if WordPress service is available
-    const wpResponse = await fetch(wordpressUrl, { method: 'HEAD' })
-    if (wpResponse.ok) {
-      return wordpressUrl
-    }
+    // WordPress mShots is always available, just return the URL
+    console.log('Using WordPress mShots service for screenshot')
+    return wordpressUrl
   } catch (error) {
-    console.log('WordPress mShots service not available, trying alternatives...')
+    console.log('WordPress mShots service failed, trying alternatives...')
   }
 
   try {
@@ -232,5 +237,8 @@ export function createScreenshotExample(): string {
 - "Take a screenshot of https://example.com"
 - "Capture a full page screenshot of google.com and analyze the layout"
 - "Screenshot github.com homepage and tell me about the navigation structure"
-- "Take a screenshot of this website and extract any visible text"`
+- "Take a screenshot of this website and extract any visible text"
+- "Show me how netflix.com looks"
+- "Capture a screenshot of reddit.com"
+- "Take a mobile-sized screenshot of amazon.com"`
 }

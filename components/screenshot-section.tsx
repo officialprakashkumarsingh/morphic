@@ -44,12 +44,23 @@ export function ScreenshotSection({ tool, isOpen, onOpenChange }: ScreenshotSect
 
   const data: ScreenshotResult | undefined = (() => {
     try {
-      return tool.state === 'result' && tool.result ? JSON.parse(tool.result) : undefined
+      if (tool.state === 'result') {
+        const result = (tool as any).result
+        if (result) {
+          // Handle both string and object results
+          if (typeof result === 'string') {
+            return JSON.parse(result)
+          } else if (typeof result === 'object') {
+            return result as ScreenshotResult
+          }
+        }
+      }
+      return undefined
     } catch (error) {
-      console.error('Failed to parse screenshot data:', error)
+      console.error('Failed to parse screenshot data:', error, 'Raw result:', (tool as any).result)
       return {
         type: 'error',
-        error: 'Failed to parse screenshot data.',
+        error: `Failed to parse screenshot data: ${error instanceof Error ? error.message : 'Unknown error'}`,
         status: 'error'
       }
     }

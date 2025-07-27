@@ -2,9 +2,16 @@
 
 import { ToolInvocation } from 'ai'
 
+import { ChartSection } from './chart-section'
+import { CryptoSection } from './crypto-section'
+import { DiagramSection } from './diagram-section'
+import { DocumentSection } from './document-section'
+import { FlightSection } from './flight-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
+import { ScreenshotSection } from './screenshot-section'
 import { SearchSection } from './search-section'
+import { StockSection } from './stock-section'
 import { VideoSearchSection } from './video-search-section'
 
 interface ToolSectionProps {
@@ -79,6 +86,46 @@ export function ToolSection({
           isOpen={isOpen}
           onOpenChange={onOpenChange}
         />
+      )
+    case 'diagram':
+      return (
+        <DiagramSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+              )
+    case 'chart':
+      return (
+        <ChartSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'screenshot':
+      return (
+        <ScreenshotSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+              )
+        case 'stock':
+      return (
+        <StockSection tool={tool} />
+      )
+    case 'crypto':
+      return (
+        <CryptoSection tool={tool} />
+      )
+    case 'flight':
+      return (
+        <FlightSection tool={tool} />
+      )
+    case 'document':
+      return (
+        <DocumentSection tool={tool} />
       )
     default:
       return null

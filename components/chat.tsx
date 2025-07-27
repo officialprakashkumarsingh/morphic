@@ -206,7 +206,7 @@ export function Chat({
     <div
       className={cn(
         'relative flex h-full min-w-0 flex-1 flex-col',
-        messages.length === 0 ? 'items-center justify-center' : ''
+        messages.length === 0 ? 'items-center justify-center' : 'pb-24'
       )}
       data-testid="full-chat"
     >

@@ -5,7 +5,7 @@
 
 import { FC, memo } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
 import { generateId } from 'ai'
 import { Check, Copy, Download } from 'lucide-react'
@@ -84,29 +84,29 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   }
 
   return (
-    <div className="relative w-full font-sans codeblock bg-neutral-800">
-      <div className="flex items-center justify-between w-full px-6 py-1 pr-4 bg-neutral-700 text-zinc-100">
-        <span className="text-xs lowercase">{language}</span>
+    <div className="relative w-full font-sans codeblock bg-neutral-800 max-w-full overflow-hidden">
+      <div className="flex items-center justify-between w-full px-3 sm:px-6 py-1 pr-2 sm:pr-4 bg-neutral-700 text-zinc-100">
+        <span className="text-xs lowercase truncate">{language}</span>
         <div className="flex items-center space-x-1">
           <Button
             variant="ghost"
-            className="focus-visible:ring-1"
+            className="focus-visible:ring-1 h-6 w-6 sm:h-8 sm:w-8"
             onClick={downloadAsFile}
             size="icon"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="sr-only">Download</span>
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="text-xs focus-visible:ring-1 focus-visible:ring-offset-0"
+            className="text-xs focus-visible:ring-1 focus-visible:ring-offset-0 h-6 w-6 sm:h-8 sm:w-8"
             onClick={onCopy}
           >
             {isCopied ? (
-              <Check className="w-4 h-4" />
+              <Check className="w-3 h-3 sm:w-4 sm:h-4" />
             ) : (
-              <Copy className="w-4 h-4" />
+              <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
             )}
             <span className="sr-only">Copy code</span>
           </Button>
@@ -114,24 +114,36 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       </div>
       <SyntaxHighlighter
         language={language}
-        style={coldarkDark}
+        style={oneDark}
         PreTag="div"
         showLineNumbers
         customStyle={{
           margin: 0,
           width: '100%',
           background: 'transparent',
-          padding: '1.5rem 1rem'
+          padding: '0.75rem',
+          fontSize: '0.85rem',
+          overflowX: 'auto',
+          maxWidth: '100%',
+          borderRadius: '0',
+          lineHeight: '1.4'
         }}
         lineNumberStyle={{
-          userSelect: 'none'
+          userSelect: 'none',
+          minWidth: '3em',
+          paddingRight: '1em',
+          fontSize: '0.8rem',
+          textAlign: 'right'
         }}
         codeTagProps={{
           style: {
-            fontSize: '0.9rem',
-            fontFamily: 'var(--font-mono)'
+            fontSize: '0.85rem',
+            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+            lineHeight: '1.4'
           }
         }}
+        wrapLines={false}
+        wrapLongLines={false}
       >
         {value}
       </SyntaxHighlighter>

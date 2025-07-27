@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { useArtifact } from './artifact/artifact-context'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
+import { useSidebar } from './ui/sidebar'
 import { EmptyScreen } from './empty-screen'
 import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
@@ -48,6 +49,7 @@ export function ChatPanel({
   showScrollToBottomButton,
   scrollContainerRef
 }: ChatPanelProps) {
+  const { open } = useSidebar()
   const [showEmptyScreen, setShowEmptyScreen] = useState(false)
   const router = useRouter()
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -113,16 +115,21 @@ export function ChatPanel({
   return (
     <div
       className={cn(
-        'w-full bg-background group/form-container shrink-0',
-        messages.length > 0 ? 'sticky bottom-0 px-2 pb-4' : 'px-6'
+        'w-full group/form-container shrink-0',
+        messages.length === 0 
+          ? 'flex flex-col items-center justify-center min-h-screen px-2' // Homepage: center positioning
+          : cn(
+              'fixed bottom-0 right-0 bg-background/95 backdrop-blur border-t border-border/10 px-2 pb-4 pt-2 z-40',
+              open ? 'md:left-[var(--sidebar-width)]' : 'left-0'
+            ) // Followback: bottom positioning
       )}
     >
       {messages.length === 0 && (
-        <div className="mb-10 flex flex-col items-center gap-4">
-          <IconLogo className="size-12 text-muted-foreground" />
-          <p className="text-center text-3xl font-semibold">
+        <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-12 mb-12">
+          <IconLogo className="size-12 text-muted-foreground logo-alive hover:animate-spin hover:scale-125 transition-all duration-500 cursor-pointer drop-shadow-lg" />
+          <h1 className="text-3xl font-semibold text-center">
             How can I help you today?
-          </p>
+          </h1>
         </div>
       )}
       <form

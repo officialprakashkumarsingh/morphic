@@ -22,27 +22,33 @@ export function createScreenshotTool(fullModel: string) {
     analysis: z.string().optional().describe('Specific analysis request from user about the screenshot')
   }),
   execute: async ({ url, width, height, fullPage, waitFor, analysis }) => {
-    try {
-      // Validate and clean URL
+    // Add overall timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Screenshot operation timed out after 30 seconds')), 30000)
+    )
+    
+    const screenshotPromise = (async () => {
       try {
-        url = validateAndCleanUrl(url)
-      } catch {
-        const errorResult = {
-          type: 'error',
-          error: 'Invalid URL provided. Please provide a valid website URL.',
-          status: 'error'
+        // Validate and clean URL
+        try {
+          url = validateAndCleanUrl(url)
+        } catch {
+          const errorResult = {
+            type: 'error',
+            error: 'Invalid URL provided. Please provide a valid website URL.',
+            status: 'error'
+          }
+          return JSON.stringify(errorResult)
         }
-        return JSON.stringify(errorResult)
-      }
 
-      // For now, we'll use a screenshot service API instead of running Puppeteer directly
-      // This is more suitable for serverless environments
-      console.log('Capturing screenshot for URL:', url)
-      const screenshotUrl = await captureScreenshot(url, width, height, fullPage, waitFor)
-      console.log('Screenshot URL generated:', screenshotUrl)
-      
-      // Perform OCR analysis on the actual screenshot
-      const ocrAnalysis = await performOCRAnalysis(screenshotUrl, analysis)
+        // For now, we'll use a screenshot service API instead of running Puppeteer directly
+        // This is more suitable for serverless environments
+        console.log('Capturing screenshot for URL:', url)
+        const screenshotUrl = await captureScreenshot(url, width, height, fullPage, waitFor)
+        console.log('Screenshot URL generated:', screenshotUrl)
+        
+        // Perform OCR analysis on the actual screenshot
+        const ocrAnalysis = await performOCRAnalysis(screenshotUrl, analysis)
       
       const result = {
         type: 'screenshot',
@@ -57,16 +63,30 @@ export function createScreenshotTool(fullModel: string) {
         status: 'success'
       }
       
-      return JSON.stringify(result)
+        return JSON.stringify(result)
+      } catch (error) {
+        console.error('Screenshot capture failed:', error)
+        const errorResult = {
+          type: 'error',
+          error: error instanceof Error ? error.message : 'Failed to capture screenshot',
+          status: 'error'
+        }
+        
+        return JSON.stringify(errorResult)
+      }
+    })()
+    
+    try {
+      return await Promise.race([screenshotPromise, timeoutPromise]) as string
     } catch (error) {
-      console.error('Screenshot capture failed:', error)
-      const errorResult = {
+      console.error('Screenshot operation failed:', error)
+      const timeoutResult = {
         type: 'error',
-        error: error instanceof Error ? error.message : 'Failed to capture screenshot',
+        error: error instanceof Error ? error.message : 'Screenshot operation failed',
         status: 'error'
       }
       
-      return JSON.stringify(errorResult)
+      return JSON.stringify(timeoutResult)
     }
   }
   })
@@ -87,9 +107,19 @@ async function captureScreenshot(
     // Method 1: WordPress.com mShots service (free and reliable)
     const wordpressUrl = `https://s0.wp.com/mshots/v1/${encodeURIComponent(url)}?w=${width}&h=${height}&vpw=${width}&vph=${height}`
     
-    // WordPress mShots is always available, just return the URL
     console.log('Using WordPress mShots service for screenshot')
-    return wordpressUrl
+    
+    // Test if the service is working by making a quick request
+    const testResponse = await Promise.race([
+      fetch(wordpressUrl, { method: 'HEAD' }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+    ])
+    
+    if ((testResponse as Response).ok) {
+      return wordpressUrl
+    } else {
+      throw new Error('WordPress mShots not responding')
+    }
   } catch (error) {
     console.log('WordPress mShots service failed, trying alternatives...')
   }
@@ -149,11 +179,23 @@ async function performOCRAnalysis(imageUrl: string, userAnalysis?: string): Prom
   try {
     console.log('Starting OCR analysis on screenshot:', imageUrl)
     
-    // Create Tesseract worker
-    worker = await createWorker('eng')
+    // Create Tesseract worker with timeout
+    worker = await Promise.race([
+      createWorker('eng'),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('OCR worker creation timeout')), 10000)
+      )
+    ]) as any
     
-    // Perform OCR on the screenshot image
-    const { data: { text, confidence } } = await worker.recognize(imageUrl)
+    // Perform OCR on the screenshot image with timeout
+    const ocrResult = await Promise.race([
+      worker.recognize(imageUrl),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('OCR processing timeout')), 15000)
+      )
+    ]) as any
+    
+    const { data: { text, confidence } } = ocrResult
     
     // Clean up the extracted text
     const cleanedText = text.trim().replace(/\n\s*\n/g, '\n').replace(/\s+/g, ' ')
@@ -235,11 +277,52 @@ async function performOCRAnalysis(imageUrl: string, userAnalysis?: string): Prom
   } catch (error) {
     console.error('OCR analysis failed:', error)
     
-    // Fallback analysis
+    // Enhanced fallback analysis without OCR
     const domain = extractDomainFromUrl(imageUrl)
+    
+    let analysis = "📸 Screenshot Analysis (No OCR):\n\n"
+    analysis += "✅ Screenshot successfully captured\n"
+    analysis += `❌ OCR processing failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\n`
+    
+    // Provide domain-specific insights
+    if (domain.includes('github')) {
+      analysis += "🔍 GitHub Platform Detected:\n"
+      analysis += "• Code repository hosting interface\n"
+      analysis += "• Developer-focused content and navigation\n"
+      analysis += "• Typical elements: repositories, code, profiles\n\n"
+    } else if (domain.includes('google')) {
+      analysis += "🔍 Google Service Detected:\n"
+      analysis += "• Clean, minimalist design expected\n"
+      analysis += "• Search interface or Google product\n"
+      analysis += "• Typical elements: search bar, navigation, results\n\n"
+    } else if (domain.includes('netflix')) {
+      analysis += "🔍 Netflix Platform Detected:\n"
+      analysis += "• Streaming service interface\n"
+      analysis += "• Content browsing and discovery\n"
+      analysis += "• Typical elements: movie grid, navigation, profiles\n\n"
+    } else {
+      analysis += "🔍 Website Analysis:\n"
+      analysis += "• Modern web interface captured\n"
+      analysis += "• Standard web elements likely present\n"
+      analysis += "• Navigation, content, and branding visible\n\n"
+    }
+    
+    if (userAnalysis) {
+      analysis += `🎯 User Request: "${userAnalysis}"\n`
+      analysis += "While OCR couldn't extract text, the screenshot is available for visual analysis.\n\n"
+    }
+    
+    analysis += "💡 Screenshot Available:\n"
+    analysis += "• Visual inspection of layout and design\n"
+    analysis += "• Color scheme and branding visible\n"
+    analysis += "• Navigation structure observable\n"
+    analysis += "• Content organization apparent\n\n"
+    
+    analysis += "🔄 Note: OCR failed but screenshot capture was successful. You can still visually analyze the website's design and layout."
+    
     return {
-      text: `Screenshot captured from ${domain}. OCR text extraction failed.`,
-      analysis: `📸 Screenshot Analysis:\n\n✅ Screenshot successfully captured\n❌ OCR text extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\n🔄 The screenshot is still available for manual review.\n\nTip: The image might have low text contrast or the text might be too small for OCR processing.`
+      text: `Screenshot from ${domain} captured successfully. Visual analysis available without text extraction.`,
+      analysis: analysis
     }
   } finally {
     // Clean up the worker

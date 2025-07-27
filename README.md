@@ -46,9 +46,179 @@ A powerful AI assistant with comprehensive tools for productivity, analysis, and
 
 ## 🗄️ Supabase Database Setup
 
-### Required Tables and Configurations
+### Option 1: Fresh Database Setup (Recommended for new projects)
 
-Run these SQL commands in your Supabase SQL Editor:
+Run this **single SQL command** in your Supabase SQL Editor to create everything fresh:
+
+```sql
+DO $$
+BEGIN
+    -- Drop existing triggers
+    DROP TRIGGER IF EXISTS update_analytics_on_chat_insert ON public.chats;
+    DROP TRIGGER IF EXISTS update_chats_updated_at ON public.chats;
+    DROP TRIGGER IF EXISTS update_user_profiles_updated_at ON public.user_profiles;
+    DROP TRIGGER IF EXISTS update_user_analytics_updated_at ON public.user_analytics;
+    
+    -- Drop existing functions
+    DROP FUNCTION IF EXISTS update_user_analytics_on_chat();
+    DROP FUNCTION IF EXISTS update_updated_at_column();
+    
+    -- Drop existing policies
+    DROP POLICY IF EXISTS "Anyone can view shared chats" ON public.chats;
+    DROP POLICY IF EXISTS "Users can view own chats" ON public.chats;
+    DROP POLICY IF EXISTS "Users can insert own chats" ON public.chats;
+    DROP POLICY IF EXISTS "Users can update own chats" ON public.chats;
+    DROP POLICY IF EXISTS "Users can delete own chats" ON public.chats;
+    DROP POLICY IF EXISTS "Users can view own profile" ON public.user_profiles;
+    DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
+    DROP POLICY IF EXISTS "Users can insert own profile" ON public.user_profiles;
+    DROP POLICY IF EXISTS "Users can view own analytics" ON public.user_analytics;
+    DROP POLICY IF EXISTS "Users can update own analytics" ON public.user_analytics;
+    DROP POLICY IF EXISTS "Users can insert own analytics" ON public.user_analytics;
+    
+    -- Drop existing indexes
+    DROP INDEX IF EXISTS idx_chats_user_id;
+    DROP INDEX IF EXISTS idx_chats_created_at;
+    DROP INDEX IF EXISTS idx_chats_updated_at;
+    DROP INDEX IF EXISTS idx_chats_is_pinned;
+    DROP INDEX IF EXISTS idx_chats_share_path;
+    DROP INDEX IF EXISTS idx_user_analytics_user_id;
+    DROP INDEX IF EXISTS idx_user_profiles_email;
+    
+    -- Drop existing tables (this will delete all data!)
+    DROP TABLE IF EXISTS public.chats CASCADE;
+    DROP TABLE IF EXISTS public.user_analytics CASCADE;
+    DROP TABLE IF EXISTS public.user_profiles CASCADE;
+    
+    -- Enable extensions
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    
+    -- Create users profile table
+    CREATE TABLE public.user_profiles (
+        id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        avatar_url TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    -- Create chats table
+    CREATE TABLE public.chats (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+        title TEXT NOT NULL DEFAULT 'New Chat',
+        messages JSONB DEFAULT '[]'::jsonb,
+        is_pinned BOOLEAN DEFAULT FALSE,
+        share_path TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    -- Create user analytics table
+    CREATE TABLE public.user_analytics (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+        total_messages INTEGER DEFAULT 0,
+        total_chats INTEGER DEFAULT 0,
+        total_tools_used INTEGER DEFAULT 0,
+        favorite_tools JSONB DEFAULT '[]'::jsonb,
+        usage_stats JSONB DEFAULT '{}'::jsonb,
+        last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    -- Enable RLS on all tables
+    ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE public.chats ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE public.user_analytics ENABLE ROW LEVEL SECURITY;
+    
+    -- Create policies for user_profiles
+    CREATE POLICY "Users can view own profile" ON public.user_profiles
+        FOR SELECT USING (auth.uid() = id);
+    CREATE POLICY "Users can update own profile" ON public.user_profiles
+        FOR UPDATE USING (auth.uid() = id);
+    CREATE POLICY "Users can insert own profile" ON public.user_profiles
+        FOR INSERT WITH CHECK (auth.uid() = id);
+    
+    -- Create policies for chats
+    CREATE POLICY "Users can view own chats" ON public.chats
+        FOR SELECT USING (auth.uid() = user_id);
+    CREATE POLICY "Users can insert own chats" ON public.chats
+        FOR INSERT WITH CHECK (auth.uid() = user_id);
+    CREATE POLICY "Users can update own chats" ON public.chats
+        FOR UPDATE USING (auth.uid() = user_id);
+    CREATE POLICY "Users can delete own chats" ON public.chats
+        FOR DELETE USING (auth.uid() = user_id);
+    CREATE POLICY "Anyone can view shared chats" ON public.chats
+        FOR SELECT USING (share_path IS NOT NULL);
+    
+    -- Create policies for user_analytics
+    CREATE POLICY "Users can view own analytics" ON public.user_analytics
+        FOR SELECT USING (auth.uid() = user_id);
+    CREATE POLICY "Users can update own analytics" ON public.user_analytics
+        FOR UPDATE USING (auth.uid() = user_id);
+    CREATE POLICY "Users can insert own analytics" ON public.user_analytics
+        FOR INSERT WITH CHECK (auth.uid() = user_id);
+    
+    -- Create functions
+    CREATE OR REPLACE FUNCTION update_updated_at_column()
+    RETURNS TRIGGER AS $func$
+    BEGIN
+        NEW.updated_at = NOW();
+        RETURN NEW;
+    END;
+    $func$ language 'plpgsql';
+    
+    CREATE OR REPLACE FUNCTION update_user_analytics_on_chat()
+    RETURNS TRIGGER AS $func$
+    BEGIN
+        INSERT INTO public.user_analytics (user_id, total_chats, last_active)
+        VALUES (NEW.user_id, 1, NOW())
+        ON CONFLICT (user_id) 
+        DO UPDATE SET 
+            total_chats = (SELECT COUNT(*) FROM public.chats WHERE user_id = NEW.user_id),
+            last_active = NOW();
+        RETURN NEW;
+    END;
+    $func$ language 'plpgsql';
+    
+    -- Create triggers for updated_at
+    CREATE TRIGGER update_user_profiles_updated_at
+        BEFORE UPDATE ON public.user_profiles
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    CREATE TRIGGER update_chats_updated_at
+        BEFORE UPDATE ON public.chats
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    CREATE TRIGGER update_user_analytics_updated_at
+        BEFORE UPDATE ON public.user_analytics
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    
+    -- Create trigger for analytics
+    CREATE TRIGGER update_analytics_on_chat_insert
+        AFTER INSERT ON public.chats
+        FOR EACH ROW EXECUTE FUNCTION update_user_analytics_on_chat();
+    
+    -- Create indexes
+    CREATE INDEX idx_chats_user_id ON public.chats(user_id);
+    CREATE INDEX idx_chats_created_at ON public.chats(created_at DESC);
+    CREATE INDEX idx_chats_updated_at ON public.chats(updated_at DESC);
+    CREATE INDEX idx_chats_is_pinned ON public.chats(is_pinned);
+    CREATE INDEX idx_chats_share_path ON public.chats(share_path) WHERE share_path IS NOT NULL;
+    CREATE INDEX idx_user_analytics_user_id ON public.user_analytics(user_id);
+    CREATE INDEX idx_user_profiles_email ON public.user_profiles(email);
+    
+END $$;
+```
+
+**⚠️ WARNING: This command will DELETE ALL existing data and recreate the database from scratch!**
+
+### Option 2: Step-by-Step Setup (For manual control)
+
+<details>
+<summary>Click to expand step-by-step instructions</summary>
 
 #### 1. Enable Row Level Security and Extensions
 ```sql
@@ -211,7 +381,9 @@ CREATE INDEX IF NOT EXISTS idx_user_analytics_user_id ON public.user_analytics(u
 CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON public.user_profiles(email);
 ```
 
-#### 7. Authentication Settings
+</details>
+
+### Authentication Settings
 
 In your Supabase Dashboard:
 

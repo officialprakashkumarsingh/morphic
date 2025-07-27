@@ -113,8 +113,7 @@ export function ChatPanel({
   return (
     <div
       className={cn(
-        'w-full bg-background group/form-container shrink-0',
-        messages.length > 0 ? 'sticky bottom-0 px-2 pb-4' : 'px-6'
+        'w-full bg-background group/form-container shrink-0 sticky bottom-0 px-2 pb-4'
       )}
     >
       {messages.length === 0 && (
@@ -127,7 +126,7 @@ export function ChatPanel({
       )}
       <form
         onSubmit={handleSubmit}
-        className={cn('max-w-3xl w-full mx-auto relative', 'mr-4 sm:mr-0')}
+        className={cn('max-w-3xl w-full mx-auto relative')}
       >
         {/* Scroll to bottom button - only shown when showScrollToBottomButton is true */}
         {showScrollToBottomButton && messages.length > 0 && (

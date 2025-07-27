@@ -102,13 +102,14 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
         // Create a temporary container for the presentation (off-screen)
         const tempContainer = document.createElement('div')
         tempContainer.style.position = 'fixed'
-        tempContainer.style.top = '-10000px'
-        tempContainer.style.left = '-10000px'
-        tempContainer.style.width = '1920px'
-        tempContainer.style.height = '1080px'
+        tempContainer.style.top = '-2000px'
+        tempContainer.style.left = '-2000px'
+        tempContainer.style.width = '595px'
+        tempContainer.style.height = '842px'
         tempContainer.style.zIndex = '-9999'
-        tempContainer.style.visibility = 'hidden'
+        tempContainer.style.visibility = 'visible'
         tempContainer.style.pointerEvents = 'none'
+        tempContainer.style.overflow = 'visible'
         
         // Create presentation HTML optimized for PDF
         const pdfOptimizedHtml = createPdfOptimizedHtml(data.html || '')
@@ -144,7 +145,7 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
             
             // Make slide visible and positioned for A4 portrait
             slide.style.display = 'block'
-            slide.style.position = 'relative'
+            slide.style.position = 'static'
             slide.style.width = '595px'  // A4 width in points
             slide.style.height = '842px' // A4 height in points
             slide.style.padding = '40px'
@@ -152,6 +153,8 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
             slide.style.visibility = 'visible'
             slide.style.background = '#ffffff'
             slide.style.fontSize = '12px'
+            slide.style.color = '#000000'
+            slide.style.opacity = '1'
             
             // Force repaint
             slide.offsetHeight
@@ -295,22 +298,34 @@ export function PresentationSection({ tool, isOpen, onOpenChange }: Presentation
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         
+        .reveal {
+          width: 595px !important;
+          height: 842px !important;
+          overflow: visible !important;
+        }
         .reveal .slides {
           width: 595px !important;
           height: 842px !important;
+          transform: none !important;
+          left: 0 !important;
+          top: 0 !important;
         }
         .reveal .slides section {
           width: 595px !important;
           height: 842px !important;
           padding: 40px !important;
           box-sizing: border-box !important;
-          display: flex !important;
+          display: block !important;
           flex-direction: column !important;
           justify-content: flex-start !important;
           text-align: left !important;
           font-family: Arial, sans-serif !important;
           color: #333 !important;
           background: #ffffff !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: none !important;
+          position: static !important;
         }
         .reveal h1 {
           font-size: 18pt !important;

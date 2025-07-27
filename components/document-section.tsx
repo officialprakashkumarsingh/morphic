@@ -237,16 +237,16 @@ export function DocumentSection({ tool }: DocumentSectionProps) {
 
 
 
-  // Animated document card
+  // Mobile-optimized document card
   const DocumentCard = ({ doc, index }: { doc: any; index: number }) => {
     const [isHovered, setIsHovered] = useState(false)
 
     return (
       <Card 
         key={doc.id}
-        className={`transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${
-          doc.verified ? 'border-green-200' : ''
-        }`}
+        className={`transition-all duration-300 hover:shadow-md ${
+          doc.verified ? 'border-green-200 bg-green-50/30' : 'bg-white'
+        } border border-gray-200`}
         style={{ 
           animationDelay: `${index * 100}ms`,
           animation: 'slideInUp 0.5s ease-out forwards'
@@ -254,114 +254,125 @@ export function DocumentSection({ tool }: DocumentSectionProps) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <CardContent className="p-4">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0 pt-1">
-              {getFileTypeIcon(doc.fileType)}
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-900 line-clamp-2 hover:text-blue-600 cursor-pointer transition-colors">
+        <CardContent className="p-3 sm:p-4">
+          <div className="space-y-3">
+            {/* Header with icon and verification */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-2 flex-1 min-w-0">
+                <div className="flex-shrink-0 pt-0.5">
+                  {getFileTypeIcon(doc.fileType)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm sm:text-base font-medium text-gray-900 line-clamp-2 hover:text-blue-600 cursor-pointer transition-colors leading-tight">
                     {doc.title}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                    {doc.snippet}
-                  </p>
-                </div>
-                
-                <div className="flex items-center space-x-1 ml-2">
-                  {doc.verified && (
-                    <Verified className="h-4 w-4 text-green-500" />
-                  )}
-                  <Badge className={getQualityColor(doc.quality, doc.verified)}>
-                    {doc.quality}
-                  </Badge>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500">
-                <div className="flex items-center space-x-1">
-                  {getSourceIcon(doc.source)}
-                  <span>{doc.source}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>{format(new Date(doc.publishDate), 'MMM yyyy')}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <User className="h-3 w-3" />
-                  <span className="truncate max-w-20">{doc.author}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <FileType className="h-3 w-3" />
-                  <span>{doc.size} MB • {doc.pages} pages</span>
-                </div>
+              <div className="flex items-center space-x-1 ml-2 flex-shrink-0">
+                {doc.verified && (
+                  <Verified className="h-4 w-4 text-green-500" />
+                )}
+                <Badge className={`text-xs ${getQualityColor(doc.quality, doc.verified)}`}>
+                  {doc.quality}
+                </Badge>
               </div>
-              
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex flex-wrap gap-1">
-                  {doc.tags.slice(0, 3).map((tag: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs px-1 py-0">
-                      {tag}
-                    </Badge>
-                  ))}
-                  {doc.tags.length > 3 && (
-                    <Badge variant="outline" className="text-xs px-1 py-0">
-                      +{doc.tags.length - 3}
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  {doc.preview?.available && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => window.open(doc.previewUrl, '_blank')}
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      Preview
-                    </Button>
-                  )}
+            </div>
+            
+            {/* Snippet */}
+            <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 leading-relaxed">
+              {doc.snippet}
+            </p>
+            
+            {/* Metadata row - responsive layout */}
+            <div className="grid grid-cols-2 sm:flex sm:items-center sm:space-x-4 gap-2 text-xs text-gray-500">
+              <div className="flex items-center space-x-1">
+                {getSourceIcon(doc.source)}
+                <span className="truncate">{doc.source}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Calendar className="h-3 w-3 flex-shrink-0" />
+                <span>{format(new Date(doc.publishDate), 'MMM yyyy')}</span>
+              </div>
+              <div className="flex items-center space-x-1 col-span-2 sm:col-span-1">
+                <User className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">{doc.author}</span>
+              </div>
+              <div className="flex items-center space-x-1 hidden sm:flex">
+                <FileType className="h-3 w-3 flex-shrink-0" />
+                <span>{doc.size} MB • {doc.pages} pages</span>
+              </div>
+            </div>
+            
+            {/* File size for mobile */}
+            <div className="flex items-center space-x-1 text-xs text-gray-500 sm:hidden">
+              <FileType className="h-3 w-3" />
+              <span>{doc.size} MB • {doc.pages} pages</span>
+            </div>
+            
+            {/* Tags */}
+            <div className="flex flex-wrap gap-1">
+              {doc.tags.slice(0, 3).map((tag: string, i: number) => (
+                <Badge key={i} variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50">
+                  {tag}
+                </Badge>
+              ))}
+              {doc.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50">
+                  +{doc.tags.length - 3}
+                </Badge>
+              )}
+            </div>
+            
+            {/* Action buttons - responsive layout */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-1 pt-1">
+              <div className="flex space-x-1 flex-1">
+                {doc.preview?.available && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={() => window.open(doc.url, '_blank')}
+                    className="h-8 px-3 text-xs flex-1 sm:flex-none"
+                    onClick={() => window.open(doc.previewUrl, '_blank')}
                   >
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    View
+                    <Eye className="h-3 w-3 mr-1" />
+                    Preview
                   </Button>
-                  <Button
-                    size="sm"
-                    className="h-7 px-2 text-xs bg-blue-600 hover:bg-blue-700"
-                    onClick={() => window.open(doc.directLink, '_blank')}
-                  >
-                    <Download className="h-3 w-3 mr-1" />
-                    Download
-                  </Button>
-                </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 text-xs flex-1 sm:flex-none"
+                  onClick={() => window.open(doc.url, '_blank')}
+                >
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  View
+                </Button>
               </div>
-              
-              {/* Additional metadata for academic papers */}
-              {(doc.citation || doc.doi) && (
-                <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
-                  {doc.citation && (
-                    <div className="mb-1">
-                      <strong>Citation:</strong> {doc.citation}
-                    </div>
-                  )}
-                  {doc.doi && (
-                    <div>
-                      <strong>DOI:</strong> {doc.doi}
-                    </div>
-                  )}
-                </div>
-              )}
+              <Button
+                size="sm"
+                className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none"
+                onClick={() => window.open(doc.directLink, '_blank')}
+              >
+                <Download className="h-3 w-3 mr-1" />
+                Download
+              </Button>
             </div>
+            
+            {/* Additional metadata for academic papers */}
+            {(doc.citation || doc.doi) && (
+              <div className="mt-2 p-2 bg-gray-50 rounded text-xs border">
+                {doc.citation && (
+                  <div className="mb-1">
+                    <strong>Citation:</strong> {doc.citation}
+                  </div>
+                )}
+                {doc.doi && (
+                  <div>
+                    <strong>DOI:</strong> {doc.doi}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -370,91 +381,95 @@ export function DocumentSection({ tool }: DocumentSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Search Header with Animation */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                <Search className="h-6 w-6 text-blue-600" />
+            {/* Search Header - Mobile Optimized */}
+      <Card className="border border-gray-200">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-3 sm:space-y-0">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-blue-100">
+                <Search className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
-              <div>
-                                 <h1 className="text-2xl font-bold">Document Search</h1>
-                 <p className="text-gray-600">&quot;{data.query}&quot; • {data.fileType.toUpperCase()} files</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold">Document Search</h1>
+                <p className="text-sm sm:text-base text-gray-600 truncate">&quot;{data.query}&quot; • {data.fileType.toUpperCase()}</p>
               </div>
             </div>
             
-            <div className="text-right">
-              <div className="text-3xl font-bold text-blue-600">{data.totalFound}</div>
-              <div className="text-sm text-gray-500">documents found</div>
+            <div className="text-center sm:text-right bg-blue-50 rounded-lg p-2 sm:bg-transparent sm:p-0">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600">{data.totalFound}</div>
+              <div className="text-xs sm:text-sm text-gray-500">documents found</div>
             </div>
           </div>
 
-          {/* Search metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Verified Sources</p>
-              <p className="font-semibold text-green-600">{data.analysis.metrics.verifiedResults}</p>
+          {/* Search metrics - Mobile Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-gray-50 rounded-lg p-3 border">
+              <p className="text-xs sm:text-sm text-gray-600 font-medium">Verified</p>
+              <p className="text-sm sm:text-base font-semibold text-green-600">{data.analysis.metrics.verifiedResults}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Average Size</p>
-              <p className="font-semibold">{data.analysis.metrics.averageSize}</p>
+            <div className="bg-gray-50 rounded-lg p-3 border">
+              <p className="text-xs sm:text-sm text-gray-600 font-medium">Avg Size</p>
+              <p className="text-sm sm:text-base font-semibold">{data.analysis.metrics.averageSize}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Quality Score</p>
-              <p className="font-semibold text-purple-600">{data.analysis.qualityScore}%</p>
+            <div className="bg-gray-50 rounded-lg p-3 border">
+              <p className="text-xs sm:text-sm text-gray-600 font-medium">Quality</p>
+              <p className="text-sm sm:text-base font-semibold text-purple-600">{data.analysis.qualityScore}%</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Top Source</p>
-              <p className="font-semibold">{data.analysis.metrics.topSources[0]}</p>
+            <div className="bg-gray-50 rounded-lg p-3 border">
+              <p className="text-xs sm:text-sm text-gray-600 font-medium">Top Source</p>
+              <p className="text-sm sm:text-base font-semibold truncate">{data.analysis.metrics.topSources[0]}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Category Filter */}
-      <div className="flex space-x-1 bg-muted p-1 rounded-lg">
-        {['all', 'academic', 'technical', 'government', 'educational'].map((category) => (
-          <Button
-            key={category}
-            variant={selectedCategory === category ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setSelectedCategory(category)}
-            className="flex-1 capitalize"
-          >
-            {category === 'all' ? 'All Sources' : category}
-          </Button>
-        ))}
+      {/* Category Filter - Mobile Scrollable */}
+      <div className="bg-gray-100 p-1 rounded-lg border">
+        <div className="flex space-x-1 overflow-x-auto pb-1">
+          {['all', 'academic', 'technical', 'government', 'educational'].map((category) => (
+            <Button
+              key={category}
+              variant={selectedCategory === category ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setSelectedCategory(category)}
+              className="whitespace-nowrap flex-shrink-0 capitalize text-xs sm:text-sm"
+            >
+              {category === 'all' ? 'All Sources' : category}
+            </Button>
+          ))}
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-muted p-1 rounded-lg">
-        {['results', 'analysis', 'sources'].map((tab) => (
-          <Button
-            key={tab}
-            variant={activeTab === tab ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab(tab)}
-            className="flex-1 capitalize"
-          >
-            {tab}
-          </Button>
-        ))}
+      {/* Tabs - Mobile Friendly */}
+      <div className="bg-gray-100 p-1 rounded-lg border">
+        <div className="flex space-x-1">
+          {['results', 'analysis', 'sources'].map((tab) => (
+            <Button
+              key={tab}
+              variant={activeTab === tab ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab(tab)}
+              className="flex-1 capitalize text-xs sm:text-sm"
+            >
+              {tab}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {activeTab === 'results' && (
         <div className="space-y-4">
           {filteredDocuments.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Search className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500">No documents found for the selected category</p>
+            <Card className="border border-gray-200">
+              <CardContent className="p-6 sm:p-8 text-center">
+                <Search className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-sm sm:text-base text-gray-500">No documents found for the selected category</p>
               </CardContent>
             </Card>
           ) : (
             <>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0 px-1">
+                <p className="text-xs sm:text-sm text-gray-600">
                   Showing {filteredDocuments.length} of {data.totalFound} documents
                 </p>
                 <div className="text-xs text-gray-500">
@@ -462,7 +477,7 @@ export function DocumentSection({ tool }: DocumentSectionProps) {
                 </div>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-4">
                 {filteredDocuments.map((doc, index) => (
                   <DocumentCard key={doc.id} doc={doc} index={index} />
                 ))}

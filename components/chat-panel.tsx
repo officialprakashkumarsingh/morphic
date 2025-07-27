@@ -117,7 +117,7 @@ export function ChatPanel({
       className={cn(
         'w-full group/form-container shrink-0',
         messages.length === 0 
-          ? 'flex flex-col items-center justify-center min-h-screen px-6' // Homepage: center positioning
+          ? 'flex flex-col items-center justify-center min-h-screen px-2' // Homepage: center positioning
           : cn(
               'fixed bottom-0 right-0 bg-background/95 backdrop-blur border-t border-border/10 px-2 pb-4 pt-2 z-40',
               open ? 'md:left-[var(--sidebar-width)]' : 'left-0'
@@ -126,7 +126,7 @@ export function ChatPanel({
     >
       {messages.length === 0 && (
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-12 mb-12">
-          <IconLogo className="size-20 text-muted-foreground" />
+          <IconLogo className="size-12 text-muted-foreground" />
           <h1 className="text-3xl font-semibold text-center">
             How can I help you today?
           </h1>

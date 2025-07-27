@@ -1,4 +1,5 @@
 import { tool } from 'ai'
+import { createWorker } from 'tesseract.js'
 import { z } from 'zod'
 
 export function createScreenshotTool(fullModel: string) {
@@ -143,65 +144,111 @@ async function captureScreenshot(
 }
 
 async function performOCRAnalysis(imageUrl: string, userAnalysis?: string): Promise<{text: string, analysis: string}> {
+  let worker: any = null
+  
   try {
-    // Enhanced analysis with more realistic insights
+    console.log('Starting OCR analysis on screenshot:', imageUrl)
+    
+    // Create Tesseract worker
+    worker = await createWorker('eng')
+    
+    // Perform OCR on the screenshot image
+    const { data: { text, confidence } } = await worker.recognize(imageUrl)
+    
+    // Clean up the extracted text
+    const cleanedText = text.trim().replace(/\n\s*\n/g, '\n').replace(/\s+/g, ' ')
+    
+    // Analyze the extracted text
+    let analysis = "📸 Real OCR Screenshot Analysis:\n\n"
+    analysis += `✅ OCR Processing Complete (Confidence: ${Math.round(confidence)}%)\n`
+    analysis += `✅ Text Extraction Successful\n`
+    analysis += `✅ Found ${cleanedText.length} characters of text\n\n`
+    
+    // Text analysis
+    const words = cleanedText.split(/\s+/).filter((word: string) => word.length > 0)
+    const lines = cleanedText.split('\n').filter((line: string) => line.trim().length > 0)
+    
+    analysis += "📊 Content Statistics:\n"
+    analysis += `• Total Characters: ${cleanedText.length}\n`
+    analysis += `• Total Words: ${words.length}\n`
+    analysis += `• Total Lines: ${lines.length}\n\n`
+    
+    // Identify common web elements
+    const hasNavigation = /nav|menu|home|about|contact|login|sign/i.test(cleanedText)
+    const hasHeadings = /^[A-Z][A-Za-z\s]{5,}$/m.test(cleanedText)
+    const hasButtons = /button|click|submit|search|download|sign up|log in/i.test(cleanedText)
+    const hasLinks = /http|www\.|\.com|\.org|\.net/i.test(cleanedText)
+    
+    analysis += "🔍 Detected Web Elements:\n"
+    if (hasNavigation) analysis += "• Navigation menu detected\n"
+    if (hasHeadings) analysis += "• Headings and titles found\n"
+    if (hasButtons) analysis += "• Interactive buttons identified\n"
+    if (hasLinks) analysis += "• Links and URLs detected\n"
+    analysis += "\n"
+    
+    // Domain-specific insights based on extracted text
     const domain = extractDomainFromUrl(imageUrl)
-    
-    let analysis = "📸 Screenshot Analysis:\n\n"
-    analysis += "✅ Successfully captured website screenshot\n"
-    analysis += "✅ Page loaded completely\n"
-    analysis += "✅ Image rendered in high quality\n\n"
-    
-    // Domain-specific insights
-    if (domain.includes('github')) {
-      analysis += "🔍 GitHub Website Detected:\n"
-      analysis += "• Code repository hosting platform\n"
-      analysis += "• Likely shows repositories, profile, or project pages\n"
-      analysis += "• Professional developer interface with dark/light theme\n\n"
-    } else if (domain.includes('google')) {
-      analysis += "🔍 Google Service Detected:\n"
-      analysis += "• Clean, minimalist design\n"
-      analysis += "• Search interface or Google product page\n"
-      analysis += "• White background with blue accent colors\n\n"
-    } else if (domain.includes('netflix')) {
-      analysis += "🔍 Netflix Platform Detected:\n"
-      analysis += "• Streaming service interface\n"
-      analysis += "• Dark theme with red branding\n"
-      analysis += "• Grid layout for content browsing\n\n"
-    } else {
-      analysis += "🔍 Website Analysis:\n"
-      analysis += "• Modern web design with responsive layout\n"
-      analysis += "• Professional navigation and content structure\n"
-      analysis += "• Optimized for user experience\n\n"
+    if (cleanedText.toLowerCase().includes('github') || domain.includes('github')) {
+      analysis += "🔍 GitHub Platform Content:\n"
+      analysis += "• Code repository interface detected\n"
+      analysis += "• Developer-focused content\n\n"
+    } else if (cleanedText.toLowerCase().includes('google') || domain.includes('google')) {
+      analysis += "🔍 Google Service Content:\n"
+      analysis += "• Search or Google product interface\n"
+      analysis += "• Clean, minimalist design\n\n"
     }
     
+    // User-specific analysis
     if (userAnalysis) {
       analysis += `🎯 User-Requested Analysis: "${userAnalysis}"\n\n`
-      analysis += "Based on the captured screenshot:\n"
-      analysis += "• Visual elements and layout are clearly visible\n"
-      analysis += "• Page structure and navigation can be analyzed\n"
-      analysis += "• Design patterns and color schemes are apparent\n"
-      analysis += "• Content hierarchy and organization is observable\n\n"
+      
+      // Check if the extracted text contains relevant keywords
+      const keywords = userAnalysis.toLowerCase().split(/\s+/)
+      const matchingKeywords = keywords.filter((keyword: string) => 
+        cleanedText.toLowerCase().includes(keyword)
+      )
+      
+      if (matchingKeywords.length > 0) {
+        analysis += `✅ Found relevant content: ${matchingKeywords.join(', ')}\n`
+      } else {
+        analysis += "ℹ️ The requested analysis terms were not found in the extracted text\n"
+      }
+      analysis += "\n"
     }
     
-    analysis += "💡 Visual Insights:\n"
-    analysis += "• Screenshot provides clear view of website interface\n"
-    analysis += "• Layout and design elements are preserved\n"
-    analysis += "• Color scheme and branding are visible\n"
-    analysis += "• Navigation structure and content organization shown\n\n"
+    // Text preview
+    const preview = cleanedText.length > 200 ? cleanedText.substring(0, 200) + '...' : cleanedText
+    analysis += "📄 Extracted Text Preview:\n"
+    analysis += `"${preview}"\n\n`
     
-    analysis += "📝 Note: This screenshot capture allows for visual analysis of the website's design, layout, and user interface elements."
-    
-    const ocrText = `Website screenshot captured successfully. The image shows a ${domain} webpage with clear visibility of the site's layout, navigation, and content structure.`
+    analysis += "💡 OCR Analysis Complete:\n"
+    analysis += "• Real text extraction from screenshot image\n"
+    analysis += "• Content analysis based on actual visible text\n"
+    analysis += "• Web element detection and classification\n"
+    analysis += `• Processing confidence: ${Math.round(confidence)}%`
     
     return {
-      text: ocrText,
+      text: cleanedText || 'No text could be extracted from the screenshot',
       analysis: analysis
     }
+    
   } catch (error) {
+    console.error('OCR analysis failed:', error)
+    
+    // Fallback analysis
+    const domain = extractDomainFromUrl(imageUrl)
     return {
-      text: "Screenshot captured but detailed analysis unavailable",
-      analysis: "✅ Screenshot was successfully captured.\n❌ Could not perform detailed content analysis."
+      text: `Screenshot captured from ${domain}. OCR text extraction failed.`,
+      analysis: `📸 Screenshot Analysis:\n\n✅ Screenshot successfully captured\n❌ OCR text extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\n🔄 The screenshot is still available for manual review.\n\nTip: The image might have low text contrast or the text might be too small for OCR processing.`
+    }
+  } finally {
+    // Clean up the worker
+    if (worker) {
+      try {
+        await worker.terminate()
+      } catch (error) {
+        console.error('Error terminating OCR worker:', error)
+      }
     }
   }
 }

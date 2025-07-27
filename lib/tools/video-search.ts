@@ -35,3 +35,8 @@ export function createVideoSearchTool(fullModel: string) {
 
 // Default export for backward compatibility, using a default model
 export const videoSearchTool = createVideoSearchTool('openai-compatible:claude-3.5-sonnet')
+
+// Function to get a video search tool instance
+export function getVideoSearchTool() {
+  return videoSearchTool
+}

@@ -17,8 +17,6 @@ import { ToolBadge } from '@/components/tool-badge'
 
 interface DiagramSectionProps {
   tool: ToolInvocation
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
 }
 
 interface DiagramResult {
@@ -36,7 +34,8 @@ interface DiagramResult {
   status: 'success' | 'error'
 }
 
-export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionProps) {
+export function DiagramSection({ tool }: DiagramSectionProps) {
+  const [isOpen, setIsOpen] = useState(true)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
   
@@ -92,7 +91,7 @@ export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionPro
         role="assistant"
         header={header}
         isOpen={isOpen}
-        onOpenChange={onOpenChange}
+        onOpenChange={setIsOpen}
         isCollapsible={true}
         showIcon={false}
       >
@@ -110,7 +109,7 @@ export function DiagramSection({ tool, isOpen, onOpenChange }: DiagramSectionPro
       role="assistant"
       header={header}
       isOpen={isOpen}
-      onOpenChange={onOpenChange}
+      onOpenChange={setIsOpen}
       isCollapsible={true}
       showIcon={false}
     >

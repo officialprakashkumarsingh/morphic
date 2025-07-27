@@ -116,9 +116,6 @@ export function RenderMessage({
         <ToolSection
           key={tool.toolCallId}
           tool={tool}
-          isOpen={getIsOpen(tool.toolCallId)}
-          onOpenChange={open => onOpenChange(tool.toolCallId, open)}
-          addToolResult={addToolResult}
         />
       ))}
       {message.parts?.map((part, index) => {
@@ -131,11 +128,6 @@ export function RenderMessage({
               <ToolSection
                 key={`${messageId}-tool-${index}`}
                 tool={part.toolInvocation}
-                isOpen={getIsOpen(part.toolInvocation.toolCallId)}
-                onOpenChange={open =>
-                  onOpenChange(part.toolInvocation.toolCallId, open)
-                }
-                addToolResult={addToolResult}
               />
             )
           case 'text':

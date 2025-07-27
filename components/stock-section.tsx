@@ -4,9 +4,8 @@ import { useState } from 'react'
 
 import type { ToolInvocation } from 'ai'
 import { format } from 'date-fns'
-// Using simple button-based tabs instead of missing tabs component
-import { BarChart3, Calendar, DollarSign, ExternalLink,Globe, TrendingDown, TrendingUp, Volume2 } from 'lucide-react'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend,Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { BarChart3, Calendar, DollarSign, ExternalLink, Globe, TrendingDown, TrendingUp, Volume2 } from 'lucide-react'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -124,13 +123,13 @@ export function StockSection({ tool }: StockSectionProps) {
 
   if (tool.state === 'call') {
     return (
-      <div className="bg-muted p-4 rounded-lg border animate-pulse">
+      <div className="bg-muted p-3 rounded-lg border animate-pulse">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="font-medium">📈 Fetching Stock Data...</span>
+          <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="font-medium text-sm">📈 Fetching Stock Data...</span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Getting real-time market data, historical charts, and financial analysis...
+        <p className="text-xs text-muted-foreground">
+          Getting real-time market data and analysis...
         </p>
       </div>
     )
@@ -138,20 +137,20 @@ export function StockSection({ tool }: StockSectionProps) {
 
   if (!data) {
     return (
-      <div className="bg-muted p-4 rounded-lg border">
-        <span className="text-sm text-muted-foreground">Stock data incomplete</span>
+      <div className="bg-muted p-3 rounded-lg border">
+        <span className="text-xs text-muted-foreground">Stock data incomplete</span>
       </div>
     )
   }
 
   if (data.status === 'error') {
     return (
-      <div className="bg-red-50 border-red-200 p-4 rounded-lg border">
+      <div className="bg-red-50 border-red-200 p-3 rounded-lg border">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-red-600">❌</span>
-          <span className="font-medium text-red-800">Stock Data Error</span>
+          <span className="font-medium text-red-800 text-sm">Stock Data Error</span>
         </div>
-        <div className="text-sm text-red-700 whitespace-pre-wrap">
+        <div className="text-xs text-red-700 whitespace-pre-wrap">
           {data.analysis}
         </div>
       </div>
@@ -161,40 +160,40 @@ export function StockSection({ tool }: StockSectionProps) {
   const formatCurrency = (value: number) => `$${value.toFixed(2)}`
   const formatPercent = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
   const formatNumber = (num: number): string => {
-    if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T'
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B'
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M'
-    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K'
+    if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T'
+    if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B'
+    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M'
+    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K'
     return num.toFixed(0)
   }
 
   const isPositive = data.quote.change >= 0
   const chartData = data.chart.map(item => ({
     ...item,
-    date: format(new Date(item.date), 'MMM dd')
+    date: format(new Date(item.date), 'MM/dd')
   }))
 
   return (
-    <div className="space-y-6">
-      {/* Stock Header */}
+    <div className="space-y-3">
+      {/* Stock Header - Compact Mobile Design */}
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-2xl font-bold flex items-center gap-2">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
                 {data.quote.name || data.symbol}
-                <Badge variant="secondary">{data.symbol}</Badge>
+                <Badge variant="secondary" className="text-xs">{data.symbol}</Badge>
               </CardTitle>
-              <p className="text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {data.quote.exchangeName} • {data.quote.marketState}
               </p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold">
+              <div className="text-xl font-bold">
                 {formatCurrency(data.quote.price)}
               </div>
-              <div className={`flex items-center gap-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+              <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                 <span className="font-medium">
                   {formatCurrency(Math.abs(data.quote.change))} ({formatPercent(data.quote.changePercent)})
                 </span>
@@ -203,37 +202,37 @@ export function StockSection({ tool }: StockSectionProps) {
           </div>
         </CardHeader>
         
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="p-3 pt-0">
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <p className="text-sm text-muted-foreground">Open</p>
+              <p className="text-muted-foreground">Open</p>
               <p className="font-medium">{formatCurrency(data.quote.open)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">High</p>
+              <p className="text-muted-foreground">High</p>
               <p className="font-medium">{formatCurrency(data.quote.high)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Low</p>
+              <p className="text-muted-foreground">Low</p>
               <p className="font-medium">{formatCurrency(data.quote.low)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Volume</p>
+              <p className="text-muted-foreground">Volume</p>
               <p className="font-medium">{formatNumber(data.quote.volume)}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Simple button-based tabs */}
-      <div className="flex space-x-1 bg-muted p-1 rounded-lg">
+      {/* Compact button-based tabs */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
         {['overview', 'chart', 'statistics', 'news'].map((tab) => (
           <Button
             key={tab}
             variant={activeTab === tab ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab(tab)}
-            className="flex-1 capitalize"
+            className="flex-1 capitalize text-xs py-1 h-7"
           >
             {tab}
           </Button>
@@ -241,32 +240,33 @@ export function StockSection({ tool }: StockSectionProps) {
       </div>
 
       {activeTab === 'overview' && (
-        <div className="space-y-4">
-          {/* Price Chart */}
+        <div className="space-y-3">
+          {/* Compact Price Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <BarChart3 className="w-4 h-4" />
                 Price Chart ({data.period})
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-64">
+            <CardContent className="p-3 pt-0">
+              <div className="h-32">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis domain={['dataMin - 5', 'dataMax + 5']} />
+                    <XAxis dataKey="date" fontSize={10} />
+                    <YAxis domain={['dataMin - 5', 'dataMax + 5']} fontSize={10} />
                     <Tooltip 
                       formatter={(value: number) => [formatCurrency(value), 'Price']}
                       labelStyle={{ color: 'black' }}
+                      contentStyle={{ fontSize: '12px' }}
                     />
                     <Area 
                       type="monotone" 
                       dataKey="close" 
                       stroke={isPositive ? '#16a34a' : '#dc2626'}
-                      fill={isPositive ? '#16a34a20' : '#dc262620'}
-                      strokeWidth={2}
+                      fill={isPositive ? '#16a34a' : '#dc2626'}
+                      fillOpacity={0.1}
+                      strokeWidth={1.5}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -274,52 +274,52 @@ export function StockSection({ tool }: StockSectionProps) {
             </CardContent>
           </Card>
 
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Compact Key Metrics */}
+          <div className="grid grid-cols-2 gap-2">
             {data.quote.marketCap && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Market Cap</span>
+                    <span className="text-xs text-muted-foreground">Market Cap</span>
                   </div>
-                  <p className="text-2xl font-bold">${formatNumber(data.quote.marketCap)}</p>
+                  <p className="text-sm font-bold">${formatNumber(data.quote.marketCap)}</p>
                 </CardContent>
               </Card>
             )}
             
             {data.stats.peRatio && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">P/E Ratio</span>
+                    <span className="text-xs text-muted-foreground">P/E Ratio</span>
                   </div>
-                  <p className="text-2xl font-bold">{data.stats.peRatio.toFixed(2)}</p>
+                  <p className="text-sm font-bold">{data.stats.peRatio.toFixed(2)}</p>
                 </CardContent>
               </Card>
             )}
             
             {data.stats.beta && (
-              <Card>
-                <CardContent className="p-4">
+              <Card className="col-span-2">
+                <CardContent className="p-3">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Beta</span>
+                    <span className="text-xs text-muted-foreground">Beta</span>
                   </div>
-                  <p className="text-2xl font-bold">{data.stats.beta.toFixed(2)}</p>
+                  <p className="text-sm font-bold">{data.stats.beta.toFixed(2)}</p>
                 </CardContent>
               </Card>
             )}
           </div>
 
-          {/* Analysis */}
+          {/* Compact Analysis */}
           <Card>
-            <CardHeader>
-              <CardTitle>Analysis</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Analysis</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-sm whitespace-pre-wrap">
+            <CardContent className="p-3 pt-0">
+              <div className="text-xs whitespace-pre-wrap leading-relaxed">
                 {data.analysis}
               </div>
             </CardContent>
@@ -328,27 +328,27 @@ export function StockSection({ tool }: StockSectionProps) {
       )}
 
       {activeTab === 'chart' && (
-        <div className="space-y-4">
-          {/* Candlestick Chart */}
+        <div className="space-y-3">
+          {/* OHLC Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle>OHLC Chart</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">OHLC Chart</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-80">
+            <CardContent className="p-3 pt-0">
+              <div className="h-40">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis domain={['dataMin - 5', 'dataMax + 5']} />
+                    <XAxis dataKey="date" fontSize={10} />
+                    <YAxis domain={['dataMin - 5', 'dataMax + 5']} fontSize={10} />
                     <Tooltip 
                       formatter={(value: number, name: string) => [formatCurrency(value), name]}
                       labelStyle={{ color: 'black' }}
+                      contentStyle={{ fontSize: '12px' }}
                     />
-                    <Legend />
                     <Line type="monotone" dataKey="high" stroke="#16a34a" strokeWidth={1} dot={false} name="High" />
                     <Line type="monotone" dataKey="low" stroke="#dc2626" strokeWidth={1} dot={false} name="Low" />
-                    <Line type="monotone" dataKey="close" stroke="#2563eb" strokeWidth={2} dot={false} name="Close" />
+                    <Line type="monotone" dataKey="close" stroke="#2563eb" strokeWidth={1.5} dot={false} name="Close" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -357,22 +357,23 @@ export function StockSection({ tool }: StockSectionProps) {
 
           {/* Volume Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Volume2 className="w-5 h-5" />
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Volume2 className="w-4 h-4" />
                 Volume
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-64">
+            <CardContent className="p-3 pt-0">
+              <div className="h-32">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <XAxis dataKey="date" fontSize={10} />
+                    <YAxis fontSize={10} />
                     <Tooltip 
                       formatter={(value: number) => [formatNumber(value), 'Volume']}
                       labelStyle={{ color: 'black' }}
+                      contentStyle={{ fontSize: '12px' }}
                     />
                     <Bar dataKey="volume" fill="#8884d8" />
                   </BarChart>
@@ -384,14 +385,14 @@ export function StockSection({ tool }: StockSectionProps) {
       )}
 
       {activeTab === 'statistics' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-3">
             {/* Financial Ratios */}
             <Card>
-              <CardHeader>
-                <CardTitle>Financial Ratios</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Financial Ratios</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="p-3 pt-0 space-y-2 text-xs">
                 {data.stats.peRatio && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">P/E Ratio</span>
@@ -427,10 +428,10 @@ export function StockSection({ tool }: StockSectionProps) {
 
             {/* Technical Indicators */}
             <Card>
-              <CardHeader>
-                <CardTitle>Technical Indicators</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Technical Indicators</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="p-3 pt-0 space-y-2 text-xs">
                 {data.technicalIndicators.sma20 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">SMA 20</span>
@@ -467,10 +468,10 @@ export function StockSection({ tool }: StockSectionProps) {
             {/* 52-Week Range */}
             {data.stats.fiftyTwoWeekHigh && data.stats.fiftyTwoWeekLow && (
               <Card>
-                <CardHeader>
-                  <CardTitle>52-Week Range</CardTitle>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">52-Week Range</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="p-3 pt-0 space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">52W High</span>
                     <span className="font-medium">{formatCurrency(data.stats.fiftyTwoWeekHigh)}</span>
@@ -495,25 +496,25 @@ export function StockSection({ tool }: StockSectionProps) {
       )}
 
       {activeTab === 'news' && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {data.news.length > 0 ? (
-            <div className="space-y-4">
-              {data.news.map((article, index) => (
+            <div className="space-y-2">
+              {data.news.slice(0, 5).map((article, index) => (
                 <Card key={index}>
-                  <CardContent className="p-4">
+                  <CardContent className="p-3">
                     <div className="space-y-2">
-                      <h3 className="font-medium leading-tight">{article.title}</h3>
+                      <h3 className="font-medium leading-tight text-sm">{article.title}</h3>
                       {article.summary && (
-                        <p className="text-sm text-muted-foreground">{article.summary}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{article.summary}</p>
                       )}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Globe className="w-3 h-3" />
                           <span>{article.publisher}</span>
                           <Calendar className="w-3 h-3" />
-                          <span>{format(new Date(article.publishedAt), 'MMM dd, yyyy')}</span>
+                          <span>{format(new Date(article.publishedAt), 'MMM dd')}</span>
                         </div>
-                        <Button variant="ghost" size="sm" asChild>
+                        <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-0">
                           <a href={article.link} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="w-3 h-3" />
                           </a>
@@ -526,17 +527,17 @@ export function StockSection({ tool }: StockSectionProps) {
             </div>
           ) : (
             <Card>
-              <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground">No recent news available for this stock.</p>
+              <CardContent className="p-6 text-center">
+                <p className="text-xs text-muted-foreground">No recent news available for this stock.</p>
               </CardContent>
             </Card>
           )}
         </div>
       )}
 
-      {/* Metadata */}
-      <div className="text-xs text-muted-foreground">
-        <span>Data updated: {format(new Date(data.timestamp), 'MMM dd, yyyy HH:mm:ss')}</span>
+      {/* Compact Metadata */}
+      <div className="text-xs text-muted-foreground text-center">
+        Updated: {format(new Date(data.timestamp), 'MMM dd, HH:mm')}
       </div>
     </div>
   )

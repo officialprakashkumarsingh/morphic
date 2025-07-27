@@ -1,16 +1,14 @@
 'use client'
 
-// import Link from 'next/link' // No longer needed directly here for Sign In button
 import React from 'react'
 
 import { User } from '@supabase/supabase-js'
 
 import { cn } from '@/lib/utils'
 
-import { useSidebar } from '@/components/ui/sidebar'
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
 
-// import { Button } from './ui/button' // No longer needed directly here for Sign In button
-import GuestMenu from './guest-menu' // Import the new GuestMenu component
+import GuestMenu from './guest-menu'
 import UserMenu from './user-menu'
 
 interface HeaderProps {
@@ -22,14 +20,21 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <header
       className={cn(
-        'fixed top-0 right-0 p-2 flex justify-between items-center z-50 backdrop-blur bg-background/95 border-b border-border/10',
-        open ? 'md:w-[calc(100%-var(--sidebar-width))]' : 'md:w-full',
+        'fixed top-0 left-0 right-0 p-2 flex justify-between items-center z-50 backdrop-blur bg-background/95 border-b border-border/10',
         'w-full h-12'
       )}
     >
-      {/* This div can be used for a logo or title on the left if needed */}
-      <div></div>
+      {/* Left side - Sidebar trigger */}
+      <div className="flex items-center gap-2">
+        <SidebarTrigger />
+      </div>
 
+      {/* Center - AhamAI Logo */}
+      <div className="flex items-center">
+        <h1 className="font-lobster text-xl text-blue-600 font-normal">AhamAI</h1>
+      </div>
+
+      {/* Right side - User/Guest menu */}
       <div className="flex items-center gap-2">
         {user ? <UserMenu user={user} /> : <GuestMenu />}
       </div>

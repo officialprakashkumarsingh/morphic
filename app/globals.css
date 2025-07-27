@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.font-lobster {
+  font-family: var(--font-lobster), cursive;
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -14,6 +18,133 @@
 
 .logo-alive {
   animation: float 3s ease-in-out infinite, breathe 2s ease-in-out infinite;
+}
+
+/* PWA and Mobile Optimizations */
+@supports (display-mode: standalone) {
+  /* Native app styles for PWA mode */
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
+    --safe-area-inset-left: env(safe-area-inset-left);
+    --safe-area-inset-right: env(safe-area-inset-right);
+  }
+  
+  body {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: contain;
+    /* Handle safe areas on modern devices */
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+  }
+  
+  /* Native-like transitions */
+  .native-transition {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Hide scrollbars for cleaner look */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  
+  /* Native-like focus states */
+  button:focus-visible, 
+  input:focus-visible, 
+  textarea:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+}
+
+/* Mobile touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Touch device styles */
+  button, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Better touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  .ios-safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Smooth scrolling and performance */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* PWA install prompt animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.pwa-install-enter {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Flight animation enhancements */
+@keyframes fly {
+  0% { transform: translateX(-100px) translateY(0px) rotate(0deg); }
+  25% { transform: translateX(0px) translateY(-5px) rotate(2deg); }
+  50% { transform: translateX(100px) translateY(0px) rotate(0deg); }
+  75% { transform: translateX(200px) translateY(-3px) rotate(-2deg); }
+  100% { transform: translateX(300px) translateY(0px) rotate(0deg); }
+}
+
+.flight-animation {
+  animation: fly 4s ease-in-out infinite;
+}
+
+/* Loading states */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.loading-pulse {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Card hover effects for non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-out;
+  }
 }
 
 @layer base {
@@ -217,5 +348,166 @@
     .text-responsive-lg {
       font-size: 1rem;
     }
+  }
+}
+
+/* Enhanced Native App Experience */
+/* Better button press feedback */
+@keyframes button-press {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+.button-press {
+  animation: button-press 0.15s ease-in-out;
+}
+
+/* Native card press animation */
+.card-press:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease-out;
+}
+
+/* Pull-to-refresh indicator */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.refresh-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Native loading skeleton */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeleton {
+  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.5) 50%, transparent 75%);
+  background-size: 200% 100%;
+}
+
+/* Haptic feedback visual simulation */
+@keyframes haptic-light {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+.haptic-feedback {
+  animation: haptic-light 0.4s ease-out;
+}
+
+/* Native status bar handling */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .status-bar-safe {
+    padding-top: calc(env(safe-area-inset-top) + 10px);
+  }
+}
+
+/* Enhanced scroll performance */
+.native-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+/* Native modal transitions */
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-enter {
+  animation: modal-enter 0.2s ease-out;
+}
+
+/* Native toast notifications */
+@keyframes toast-slide-in {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast-enter {
+  animation: toast-slide-in 0.3s ease-out;
+}
+
+/* Dark mode PWA optimizations */
+@media (prefers-color-scheme: dark) {
+  @supports (display-mode: standalone) {
+    /* Better dark mode status bar */
+    meta[name="theme-color"] {
+      content: hsl(var(--background));
+    }
+    
+    /* Improved contrast in dark mode */
+    .dark-mode-enhance {
+      background: linear-gradient(to bottom, 
+        hsl(var(--background)), 
+        hsl(var(--card))
+      );
+    }
+  }
+}
+
+/* Ultra-responsive tiny screens */
+@media (max-width: 320px) {
+  .ultra-responsive {
+    font-size: 0.75rem;
+    padding: 0.25rem;
+  }
+  
+  .container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (orientation: landscape) and (max-height: 500px) {
+  .landscape-compact {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .landscape-hide {
+    display: none;
+  }
+}
+
+/* High refresh rate optimizations */
+@media (min-resolution: 120dpi) {
+  .smooth-animation {
+    animation-duration: calc(var(--duration) * 0.8);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .no-motion {
+    animation: none !important;
+    transition: none !important;
   }
 }

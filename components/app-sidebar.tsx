@@ -1,53 +1,62 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 
-import { Plus } from 'lucide-react'
-
-import { cn } from '@/lib/utils'
-
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-  SidebarTrigger
+  SidebarMenuItem
 } from '@/components/ui/sidebar'
 
-import { ChatHistorySection } from './sidebar/chat-history-section'
-import { ChatHistorySkeleton } from './sidebar/chat-history-skeleton'
-import { IconLogo } from './ui/icons'
+import { ChatHistory } from './chat-history'
 
-export default function AppSidebar() {
+export default async function AppSidebar() {
   return (
-    <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
-      <SidebarHeader className="flex flex-row justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 px-2 py-3">
-          <IconLogo className={cn('size-5')} />
-          <span className="font-semibold text-sm">AhamAI</span>
-        </Link>
-        <SidebarTrigger />
+    <Sidebar className="border-r">
+      <SidebarHeader className="flex flex-row justify-center items-center px-2 py-3">
+        {/* Header content removed since logo is now in main header */}
       </SidebarHeader>
-      <SidebarContent className="flex flex-col px-2 py-4 h-full">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link href="/" className="flex items-center gap-2">
-                <Plus className="size-4" />
-                <span>New</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <div className="flex-1 overflow-y-auto">
-          <Suspense fallback={<ChatHistorySkeleton />}>
-            <ChatHistorySection />
+      
+      <SidebarContent className="flex flex-col h-full">
+        {/* Chat History */}
+        <div className="flex-1 overflow-hidden">
+          <Suspense
+            fallback={
+              <div className="p-4">
+                <div className="space-y-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                  ))}
+                </div>
+              </div>
+            }
+          >
+            <ChatHistory />
           </Suspense>
         </div>
+
+        {/* Navigation Menu */}
+        <div className="p-2 border-t">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/">
+                  <span>Home</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/profile">
+                  <span>Profile</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </div>
       </SidebarContent>
-      <SidebarRail />
     </Sidebar>
   )
 }

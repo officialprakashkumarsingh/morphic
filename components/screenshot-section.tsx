@@ -19,8 +19,6 @@ import { ToolBadge } from './tool-badge'
 
 interface ScreenshotSectionProps {
   tool: ToolInvocation
-  isOpen: boolean
-  onOpenChange: (value: boolean) => void
 }
 
 interface ScreenshotResult {
@@ -37,7 +35,8 @@ interface ScreenshotResult {
   status: 'success' | 'error'
 }
 
-export function ScreenshotSection({ tool, isOpen, onOpenChange }: ScreenshotSectionProps) {
+export function ScreenshotSection({ tool }: ScreenshotSectionProps) {
+  const [isOpen, setIsOpen] = useState(true)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
@@ -98,7 +97,7 @@ export function ScreenshotSection({ tool, isOpen, onOpenChange }: ScreenshotSect
   }
 
   return (
-    <Collapsible open={isOpen} onOpenChange={onOpenChange}>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleContent>
         <div className={cn('border rounded-lg overflow-hidden')}>
           <div className="p-3 bg-muted/30 border-b flex items-center justify-between">

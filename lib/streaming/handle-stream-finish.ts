@@ -77,7 +77,7 @@ export async function handleStreamFinish({
       createdAt: new Date(),
       userId: userId,
       path: `/search/${chatId}`,
-      title: originalMessages[0].content,
+      title: originalMessages[0]?.content || 'New Chat',
       id: chatId
     }
 

@@ -4,8 +4,8 @@ import { useState } from 'react'
 
 import type { ToolInvocation } from 'ai'
 import { format } from 'date-fns'
-import { BarChart3, Bitcoin, Calendar, Coins,DollarSign, ExternalLink, Globe, TrendingDown, TrendingUp, Volume2 } from 'lucide-react'
-import { Area, AreaChart, Bar,BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { BarChart3, Bitcoin, Calendar, Coins, DollarSign, TrendingDown, TrendingUp, Volume2 } from 'lucide-react'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -108,10 +108,10 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
 
   if (tool.state === 'call') {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center p-4">
         <div className="flex items-center space-x-2">
-          <Bitcoin className="h-5 w-5 animate-pulse text-orange-500" />
-          <span>Fetching crypto data...</span>
+          <Bitcoin className="h-4 w-4 animate-pulse text-orange-500" />
+          <span className="text-sm">Fetching crypto data...</span>
         </div>
       </div>
     )
@@ -120,16 +120,12 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
-                <TrendingDown className="h-4 w-4 text-red-600" />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-800">Crypto Data Error</h3>
-              <p className="mt-1 text-sm text-red-600">{error}</p>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-2">
+            <TrendingDown className="h-4 w-4 text-red-600" />
+            <div>
+              <p className="text-sm font-medium text-red-800">Crypto Data Error</p>
+              <p className="text-xs text-red-600 mt-1">{error}</p>
             </div>
           </div>
         </CardContent>
@@ -139,8 +135,8 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
 
   if (!data) {
     return (
-      <div className="text-center p-8">
-        <p className="text-gray-500">No crypto data available</p>
+      <div className="text-center p-4">
+        <p className="text-sm text-gray-500">No crypto data available</p>
       </div>
     )
   }
@@ -157,18 +153,18 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
   }
 
   const formatLargeNumber = (num: number) => {
-    if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`
-    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`
-    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`
-    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`
+    if (num >= 1e12) return `$${(num / 1e12).toFixed(1)}T`
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(1)}M`
+    if (num >= 1e3) return `$${(num / 1e3).toFixed(1)}K`
     return `$${num.toFixed(2)}`
   }
 
   const formatSupply = (num: number) => {
-    if (num >= 1e12) return `${(num / 1e12).toFixed(2)}T`
-    if (num >= 1e9) return `${(num / 1e9).toFixed(2)}B`
-    if (num >= 1e6) return `${(num / 1e6).toFixed(2)}M`
-    if (num >= 1e3) return `${(num / 1e3).toFixed(2)}K`
+    if (num >= 1e12) return `${(num / 1e12).toFixed(1)}T`
+    if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`
+    if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`
+    if (num >= 1e3) return `${(num / 1e3).toFixed(1)}K`
     return num.toLocaleString()
   }
 
@@ -177,7 +173,7 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
   }
 
   const getChangeIcon = (change: number) => {
-    return change >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />
+    return change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />
   }
 
   const getTrendColor = (trend: string) => {
@@ -194,62 +190,61 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Crypto Header */}
+    <div className="space-y-3">
+      {/* Crypto Header - Compact Mobile Design */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
-                <Bitcoin className="h-6 w-6 text-orange-600" />
+        <CardContent className="p-3">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100">
+                <Bitcoin className="h-4 w-4 text-orange-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{data.current.name}</h1>
-                <p className="text-gray-600">{data.current.symbol}</p>
+                <h1 className="text-lg font-bold">{data.current.name}</h1>
+                <p className="text-xs text-gray-600">{data.current.symbol}</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold">{formatPrice(data.current.price)}</div>
-              <div className={`flex items-center space-x-1 ${getChangeColor(data.current.change24h)}`}>
+              <div className="text-xl font-bold">{formatPrice(data.current.price)}</div>
+              <div className={`flex items-center space-x-1 text-xs ${getChangeColor(data.current.change24h)}`}>
                 {getChangeIcon(data.current.change24h)}
                 <span className="font-medium">
                   {data.current.change24h >= 0 ? '+' : ''}{data.current.change24h.toFixed(2)}%
                 </span>
-                <span className="text-sm text-gray-500">24h</span>
               </div>
             </div>
           </div>
           
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <p className="text-sm text-gray-600">Market Cap</p>
+              <p className="text-gray-600">Market Cap</p>
               <p className="font-semibold">{formatLargeNumber(data.current.marketCap)}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">24h Volume</p>
+              <p className="text-gray-600">24h Volume</p>
               <p className="font-semibold">{formatLargeNumber(data.current.volume24h)}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Market Rank</p>
+              <p className="text-gray-600">Rank</p>
               <p className="font-semibold">#{data.market.marketCapRank || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Circulating Supply</p>
+              <p className="text-gray-600">Supply</p>
               <p className="font-semibold">{formatSupply(data.market.circulatingSupply || 0)}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Simple button-based tabs */}
-      <div className="flex space-x-1 bg-muted p-1 rounded-lg">
+      {/* Compact button-based tabs */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
         {['overview', 'chart', 'market', 'analysis'].map((tab) => (
           <Button
             key={tab}
             variant={activeTab === tab ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab(tab)}
-            className="flex-1 capitalize"
+            className="flex-1 capitalize text-xs py-1 h-7"
           >
             {tab}
           </Button>
@@ -257,41 +252,44 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
       </div>
 
       {activeTab === 'overview' && (
-        <div className="space-y-4">
-          {/* Price Chart */}
+        <div className="space-y-3">
+          {/* Compact Price Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="h-5 w-5" />
-                <span>Price Chart ({data.period})</span>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center space-x-2 text-sm">
+                <BarChart3 className="h-4 w-4" />
+                <span>Price ({data.period})</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-80">
+            <CardContent className="p-3 pt-0">
+              <div className="h-32">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={data.chart}>
-                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="timestamp"
                       type="number"
                       scale="time"
                       domain={['dataMin', 'dataMax']}
-                      tickFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd')}
+                      tickFormatter={(timestamp) => format(new Date(timestamp), 'MM/dd')}
+                      fontSize={10}
                     />
                     <YAxis 
                       domain={['dataMin - dataMin * 0.1', 'dataMax + dataMax * 0.1']}
-                      tickFormatter={(value) => formatPrice(value)}
+                      tickFormatter={(value) => `$${value.toFixed(2)}`}
+                      fontSize={10}
                     />
                     <Tooltip 
-                      labelFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd, yyyy HH:mm')}
+                      labelFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd')}
                       formatter={(value: number) => [formatPrice(value), 'Price']}
+                      contentStyle={{ fontSize: '12px' }}
                     />
                     <Area 
                       type="monotone" 
                       dataKey="price" 
                       stroke="#f97316" 
-                      fill="#fed7aa" 
-                      strokeWidth={2}
+                      fill="#f97316" 
+                      fillOpacity={0.1}
+                      strokeWidth={1.5}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -299,80 +297,80 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
             </CardContent>
           </Card>
 
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Compact Key Metrics */}
+          <div className="grid grid-cols-2 gap-2">
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">7d Change</p>
-                    <p className={`text-lg font-semibold ${getChangeColor(data.market.priceChange7d || 0)}`}>
+                    <p className="text-xs text-gray-600">7d Change</p>
+                    <p className={`text-sm font-semibold ${getChangeColor(data.market.priceChange7d || 0)}`}>
                       {data.market.priceChange7d >= 0 ? '+' : ''}{data.market.priceChange7d?.toFixed(2) || 0}%
                     </p>
                   </div>
-                  <Calendar className="h-8 w-8 text-gray-400" />
+                  <Calendar className="h-5 w-5 text-gray-400" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">30d Change</p>
-                    <p className={`text-lg font-semibold ${getChangeColor(data.market.priceChange30d || 0)}`}>
+                    <p className="text-xs text-gray-600">30d Change</p>
+                    <p className={`text-sm font-semibold ${getChangeColor(data.market.priceChange30d || 0)}`}>
                       {data.market.priceChange30d >= 0 ? '+' : ''}{data.market.priceChange30d?.toFixed(2) || 0}%
                     </p>
                   </div>
-                  <Calendar className="h-8 w-8 text-gray-400" />
+                  <Calendar className="h-5 w-5 text-gray-400" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4">
+            <Card className="col-span-2">
+              <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Volatility</p>
-                    <Badge className={getVolatilityColor(data.analysis.volatility)}>
+                    <p className="text-xs text-gray-600">Volatility</p>
+                    <Badge className={`${getVolatilityColor(data.analysis.volatility)} text-xs`}>
                       {data.analysis.volatility}
                     </Badge>
                   </div>
-                  <Volume2 className="h-8 w-8 text-gray-400" />
+                  <Volume2 className="h-5 w-5 text-gray-400" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Analysis Summary */}
+          {/* Compact Analysis Summary */}
           <Card>
-            <CardHeader>
-              <CardTitle>Market Analysis</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Analysis</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-start space-x-4 mb-4">
-                <Badge className={getTrendColor(data.analysis.trend)}>
+            <CardContent className="p-3 pt-0">
+              <div className="flex items-start space-x-2 mb-2">
+                <Badge className={`${getTrendColor(data.analysis.trend)} text-xs`}>
                   {data.analysis.trend}
                 </Badge>
-                <Badge variant="outline">
-                  {data.analysis.sentiment} sentiment
+                <Badge variant="outline" className="text-xs">
+                  {data.analysis.sentiment}
                 </Badge>
               </div>
-              <p className="text-gray-700">{data.analysis.summary}</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{data.analysis.summary}</p>
             </CardContent>
           </Card>
         </div>
       )}
 
       {activeTab === 'chart' && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Price Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle>Price Movement</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Price Movement</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-80">
+            <CardContent className="p-3 pt-0">
+              <div className="h-40">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={data.chart}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -381,21 +379,24 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
                       type="number"
                       scale="time"
                       domain={['dataMin', 'dataMax']}
-                      tickFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd')}
+                      tickFormatter={(timestamp) => format(new Date(timestamp), 'MM/dd')}
+                      fontSize={10}
                     />
                     <YAxis 
                       domain={['dataMin - dataMin * 0.1', 'dataMax + dataMax * 0.1']}
                       tickFormatter={(value) => formatPrice(value)}
+                      fontSize={10}
                     />
                     <Tooltip 
-                      labelFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd, yyyy HH:mm')}
+                      labelFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd')}
                       formatter={(value: number) => [formatPrice(value), 'Price']}
+                      contentStyle={{ fontSize: '12px' }}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="price" 
                       stroke="#f97316" 
-                      strokeWidth={2}
+                      strokeWidth={1.5}
                       dot={false}
                     />
                   </LineChart>
@@ -407,11 +408,11 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
           {/* Volume Chart */}
           {data.chart.some(d => d.volume > 0) && (
             <Card>
-              <CardHeader>
-                <CardTitle>Trading Volume</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Volume</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="h-60">
+              <CardContent className="p-3 pt-0">
+                <div className="h-32">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data.chart}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -420,12 +421,14 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
                         type="number"
                         scale="time"
                         domain={['dataMin', 'dataMax']}
-                        tickFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd')}
+                        tickFormatter={(timestamp) => format(new Date(timestamp), 'MM/dd')}
+                        fontSize={10}
                       />
-                      <YAxis tickFormatter={(value) => formatLargeNumber(value)} />
+                      <YAxis tickFormatter={(value) => formatLargeNumber(value)} fontSize={10} />
                       <Tooltip 
-                        labelFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd, yyyy')}
+                        labelFormatter={(timestamp) => format(new Date(timestamp), 'MMM dd')}
                         formatter={(value: number) => [formatLargeNumber(value), 'Volume']}
+                        contentStyle={{ fontSize: '12px' }}
                       />
                       <Bar dataKey="volume" fill="#f97316" opacity={0.7} />
                     </BarChart>
@@ -438,53 +441,37 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
       )}
 
       {activeTab === 'market' && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Market Statistics */}
           <Card>
-            <CardHeader>
-              <CardTitle>Market Statistics</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Market Stats</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Market Cap</span>
-                    <span className="font-medium">{formatLargeNumber(data.market.marketCap || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Total Volume</span>
-                    <span className="font-medium">{formatLargeNumber(data.market.totalVolume || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Circulating Supply</span>
-                    <span className="font-medium">{formatSupply(data.market.circulatingSupply || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Total Supply</span>
-                    <span className="font-medium">{formatSupply(data.market.totalSupply || 0)}</span>
-                  </div>
+            <CardContent className="p-3 pt-0">
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Market Cap</span>
+                  <span className="font-medium">{formatLargeNumber(data.market.marketCap || 0)}</span>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Max Supply</span>
-                    <span className="font-medium">
-                      {data.market.maxSupply ? formatSupply(data.market.maxSupply) : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">All-Time High</span>
-                    <span className="font-medium">{formatPrice(data.market.ath || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">All-Time Low</span>
-                    <span className="font-medium">{formatPrice(data.market.atl || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Market Cap Change 24h</span>
-                    <span className={`font-medium ${getChangeColor(data.market.marketCapChange24h || 0)}`}>
-                      {data.market.marketCapChange24h >= 0 ? '+' : ''}{data.market.marketCapChange24h?.toFixed(2) || 0}%
-                    </span>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Volume</span>
+                  <span className="font-medium">{formatLargeNumber(data.market.totalVolume || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Circulating</span>
+                  <span className="font-medium">{formatSupply(data.market.circulatingSupply || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total Supply</span>
+                  <span className="font-medium">{formatSupply(data.market.totalSupply || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">All-Time High</span>
+                  <span className="font-medium">{formatPrice(data.market.ath || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">All-Time Low</span>
+                  <span className="font-medium">{formatPrice(data.market.atl || 0)}</span>
                 </div>
               </div>
             </CardContent>
@@ -493,23 +480,23 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
           {/* Comparison */}
           {data.comparison && data.comparison.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle>Comparison</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Similar Assets</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {data.comparison.map((crypto, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Coins className="h-5 w-5 text-gray-400" />
+              <CardContent className="p-3 pt-0">
+                <div className="space-y-2">
+                  {data.comparison.slice(0, 3).map((crypto, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded text-xs">
+                      <div className="flex items-center space-x-2">
+                        <Coins className="h-3 w-3 text-gray-400" />
                         <div>
                           <p className="font-medium">{crypto.name}</p>
-                          <p className="text-sm text-gray-600">{crypto.symbol}</p>
+                          <p className="text-gray-600">{crypto.symbol}</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">{formatPrice(crypto.price)}</p>
-                        <p className={`text-sm ${getChangeColor(crypto.change24h)}`}>
+                        <p className={`${getChangeColor(crypto.change24h)}`}>
                           {crypto.change24h >= 0 ? '+' : ''}{crypto.change24h.toFixed(2)}%
                         </p>
                       </div>
@@ -523,41 +510,33 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
       )}
 
       {activeTab === 'analysis' && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Technical Indicators */}
           <Card>
-            <CardHeader>
-              <CardTitle>Technical Indicators</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Technical Indicators</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">SMA 20</span>
-                    <span className="font-medium">{formatPrice(data.technicalIndicators.sma20 || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">SMA 50</span>
-                    <span className="font-medium">{formatPrice(data.technicalIndicators.sma50 || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">RSI (14)</span>
-                    <span className="font-medium">{data.technicalIndicators.rsi?.toFixed(2) || 'N/A'}</span>
-                  </div>
+            <CardContent className="p-3 pt-0">
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">SMA 20</span>
+                  <span className="font-medium">{formatPrice(data.technicalIndicators.sma20 || 0)}</span>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Support Level</span>
-                    <span className="font-medium">{formatPrice(data.analysis.keyLevels.support)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Resistance Level</span>
-                    <span className="font-medium">{formatPrice(data.analysis.keyLevels.resistance)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Avg Volume</span>
-                    <span className="font-medium">{formatLargeNumber(data.technicalIndicators.avgVolume || 0)}</span>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">SMA 50</span>
+                  <span className="font-medium">{formatPrice(data.technicalIndicators.sma50 || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">RSI (14)</span>
+                  <span className="font-medium">{data.technicalIndicators.rsi?.toFixed(2) || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Support</span>
+                  <span className="font-medium">{formatPrice(data.analysis.keyLevels.support)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Resistance</span>
+                  <span className="font-medium">{formatPrice(data.analysis.keyLevels.resistance)}</span>
                 </div>
               </div>
             </CardContent>
@@ -565,11 +544,11 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
 
           {/* Price Range */}
           <Card>
-            <CardHeader>
-              <CardTitle>Price Range ({data.period})</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Price Range ({data.period})</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-3 pt-0">
+              <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-gray-600">High</span>
                   <span className="font-medium">{formatPrice(data.technicalIndicators.priceRange?.high || 0)}</span>
@@ -588,10 +567,9 @@ export function CryptoSection({ tool }: CryptoSectionProps) {
         </div>
       )}
 
-      {/* Metadata */}
+      {/* Compact Metadata */}
       <div className="text-xs text-gray-500 text-center">
-        Last updated: {format(new Date(data.timestamp), 'MMM dd, yyyy HH:mm:ss')} • 
-        Period: {data.period} • Currency: {data.currency}
+        Updated: {format(new Date(data.timestamp), 'MMM dd, HH:mm')} • {data.period} • {data.currency}
       </div>
     </div>
   )

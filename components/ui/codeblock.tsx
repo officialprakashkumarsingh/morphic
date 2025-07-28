@@ -84,69 +84,78 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   }
 
   return (
-    <div className="relative w-full font-sans codeblock bg-neutral-800 max-w-full overflow-hidden">
-      <div className="flex items-center justify-between w-full px-3 sm:px-6 py-1 pr-2 sm:pr-4 bg-neutral-700 text-zinc-100">
-        <span className="text-xs lowercase truncate">{language}</span>
-        <div className="flex items-center space-x-1">
+    <div className="relative w-full font-mono codeblock-container bg-zinc-950 dark:bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 dark:border-zinc-700 my-4">
+      <div className="flex items-center justify-between w-full px-3 py-2 bg-zinc-800 dark:bg-zinc-800 text-zinc-100 border-b border-zinc-700">
+        <span className="text-xs font-medium text-zinc-300 truncate pr-2">{language || 'text'}</span>
+        <div className="flex items-center space-x-1 flex-shrink-0">
           <Button
             variant="ghost"
-            className="focus-visible:ring-1 h-6 w-6 sm:h-8 sm:w-8"
+            className="focus-visible:ring-1 h-7 w-7 p-0 hover:bg-zinc-700"
             onClick={downloadAsFile}
             size="icon"
           >
-            <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+            <Download className="w-3.5 h-3.5" />
             <span className="sr-only">Download</span>
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="text-xs focus-visible:ring-1 focus-visible:ring-offset-0 h-6 w-6 sm:h-8 sm:w-8"
+            className="focus-visible:ring-1 focus-visible:ring-offset-0 h-7 w-7 p-0 hover:bg-zinc-700"
             onClick={onCopy}
           >
             {isCopied ? (
-              <Check className="w-3 h-3 sm:w-4 sm:h-4" />
+              <Check className="w-3.5 h-3.5" />
             ) : (
-              <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
+              <Copy className="w-3.5 h-3.5" />
             )}
             <span className="sr-only">Copy code</span>
           </Button>
         </div>
       </div>
-      <SyntaxHighlighter
-        language={language}
-        style={oneDark}
-        PreTag="div"
-        showLineNumbers
-        customStyle={{
-          margin: 0,
-          width: '100%',
-          background: 'transparent',
-          padding: '0.75rem',
-          fontSize: '0.85rem',
-          overflowX: 'auto',
-          maxWidth: '100%',
-          borderRadius: '0',
-          lineHeight: '1.4'
-        }}
-        lineNumberStyle={{
-          userSelect: 'none',
-          minWidth: '3em',
-          paddingRight: '1em',
-          fontSize: '0.8rem',
-          textAlign: 'right'
-        }}
-        codeTagProps={{
-          style: {
-            fontSize: '0.85rem',
-            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-            lineHeight: '1.4'
-          }
-        }}
-        wrapLines={false}
-        wrapLongLines={false}
-      >
-        {value}
-      </SyntaxHighlighter>
+      <div className="relative overflow-hidden">
+        <SyntaxHighlighter
+          language={language}
+          style={oneDark}
+          PreTag="div"
+          showLineNumbers
+          customStyle={{
+            margin: 0,
+            width: '100%',
+            background: 'transparent',
+            padding: '1rem',
+            fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+            overflowX: 'auto',
+            maxWidth: '100%',
+            borderRadius: '0',
+            lineHeight: '1.5',
+            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+          }}
+          lineNumberStyle={{
+            userSelect: 'none',
+            minWidth: '2.5em',
+            paddingRight: '1em',
+            fontSize: 'clamp(0.7rem, 2.2vw, 0.8rem)',
+            textAlign: 'right',
+            color: '#6b7280',
+            borderRight: '1px solid #374151',
+            marginRight: '1em'
+          }}
+          codeTagProps={{
+            style: {
+              fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+              lineHeight: '1.5',
+              wordBreak: 'normal',
+              whiteSpace: 'pre',
+              overflowWrap: 'normal'
+            }
+          }}
+          wrapLines={false}
+          wrapLongLines={false}
+        >
+          {value}
+        </SyntaxHighlighter>
+      </div>
     </div>
   )
 })

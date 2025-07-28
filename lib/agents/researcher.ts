@@ -6,7 +6,6 @@ import { createQuestionTool } from '../tools/question'
 import { retrieveTool } from '../tools/retrieve'
 import { createSearchTool } from '../tools/search'
 import { createStockTool } from '../tools/stock'
-import { createUserKnowledgeTool } from '../tools/user-knowledge'
 import { createVideoSearchTool } from '../tools/video-search'
 import { getModel } from '../utils/registry'
 
@@ -21,8 +20,7 @@ export const tools = {
   question: createQuestionTool(DEFAULT_MODEL),
   diagram: createDiagramTool(DEFAULT_MODEL),
   stock: createStockTool(),
-  crypto: createCryptoTool(),
-  userKnowledge: createUserKnowledgeTool()
+  crypto: createCryptoTool()
 }
 
 // Researcher function that returns streamText configuration

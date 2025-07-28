@@ -9,7 +9,6 @@ import { DiagramSection } from './diagram-section'
 import { QuestionSection } from './question-section'
 import { SearchSection } from './search-section'
 import { StockSection } from './stock-section'
-import { UserKnowledgeSection } from './user-knowledge-section'
 import { VideoSearchSection } from './video-search-section'
 
 interface ToolSectionProps {
@@ -41,10 +40,6 @@ export const ToolSection = memo(({ tool }: ToolSectionProps) => {
     case 'crypto':
       return (
         <CryptoSection tool={tool} />
-      )
-    case 'userKnowledge':
-      return (
-        <UserKnowledgeSection tool={tool} />
       )
     default:
       return null

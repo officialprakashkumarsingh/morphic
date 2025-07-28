@@ -58,8 +58,8 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
     if (!value) return ''
     
     // More aggressive limits to prevent any freezing
-    const maxLength = 5000 // Reduced to 5k characters
-    const maxLines = 200 // Limit to 200 lines max
+    const maxLength = 3000 // Further reduced to 3k characters
+    const maxLines = 150 // Limit to 150 lines max
     
     let processedCode = value
     
@@ -107,9 +107,10 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
     copyToClipboard(value)
   }, [isCopied, copyToClipboard, value])
 
-  return (
-    <div className="codeblock-wrapper w-full my-4">
-      <div className="codeblock-container bg-zinc-950 dark:bg-zinc-900 rounded-lg border border-zinc-800 dark:border-zinc-700 overflow-hidden">
+  // Fallback to simple pre/code if SyntaxHighlighter fails
+  const renderFallback = () => (
+    <div className="w-full my-4 max-w-full overflow-hidden">
+      <div className="bg-zinc-950 rounded-lg border border-zinc-800 overflow-hidden">
         <div className="flex items-center justify-between px-3 py-2 bg-zinc-800 text-zinc-100 border-b border-zinc-700">
           <span className="text-xs font-medium text-zinc-300 truncate flex-1 min-w-0 pr-2">
             {language || 'text'}
@@ -139,59 +140,100 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
             </Button>
           </div>
         </div>
-        <div className="codeblock-content">
-          <SyntaxHighlighter
-            language={language}
-            style={oneDark}
-            PreTag="div"
-            showLineNumbers
-            customStyle={{
-              margin: 0,
-              background: 'transparent',
-              padding: '12px',
-              fontSize: '13px',
-              lineHeight: '1.4',
-              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-              overflow: 'auto',
-              maxHeight: '500px', // Limit height to prevent huge blocks
-              width: '100%',
-              minWidth: 0
-            }}
-            lineNumberStyle={{
-              userSelect: 'none',
-              minWidth: '40px',
-              paddingRight: '12px',
-              fontSize: '12px',
-              textAlign: 'right',
-              color: '#6b7280',
-              borderRight: '1px solid #374151',
-              marginRight: '12px',
-              display: 'inline-block',
-              flexShrink: 0
-            }}
-            codeTagProps={{
-              style: {
-                fontSize: '13px',
-                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-                lineHeight: '1.4',
-                whiteSpace: 'pre',
-                wordBreak: 'normal',
-                overflowWrap: 'normal',
-                display: 'block',
-                width: 'max-content',
-                minWidth: '100%'
-              }
-            }}
-            wrapLines={false}
-            wrapLongLines={false}
-          >
-            {processedValue}
-          </SyntaxHighlighter>
+        <div className="overflow-auto max-w-full max-h-96 p-3 bg-zinc-950">
+          <pre className="text-sm font-mono text-zinc-100 whitespace-pre overflow-x-auto">
+            <code>{processedValue}</code>
+          </pre>
         </div>
       </div>
     </div>
   )
+
+  try {
+    return (
+      <div className="w-full my-4 max-w-full overflow-hidden">
+        <div className="bg-zinc-950 rounded-lg border border-zinc-800 overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 bg-zinc-800 text-zinc-100 border-b border-zinc-700">
+            <span className="text-xs font-medium text-zinc-300 truncate flex-1 min-w-0 pr-2">
+              {language || 'text'}
+            </span>
+            <div className="flex items-center space-x-1 flex-shrink-0">
+              <Button
+                variant="ghost"
+                className="h-7 w-7 p-0 hover:bg-zinc-700"
+                onClick={downloadAsFile}
+                size="icon"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="sr-only">Download</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 p-0 hover:bg-zinc-700"
+                onClick={onCopy}
+              >
+                {isCopied ? (
+                  <Check className="w-3.5 h-3.5" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+                <span className="sr-only">Copy code</span>
+              </Button>
+            </div>
+          </div>
+          <div className="overflow-auto max-w-full max-h-96">
+            <SyntaxHighlighter
+              language={language}
+              style={oneDark}
+              PreTag="div"
+              showLineNumbers
+              customStyle={{
+                margin: 0,
+                background: 'transparent',
+                padding: '12px',
+                fontSize: '13px',
+                lineHeight: '1.4',
+                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                width: '100%',
+                minWidth: 0,
+                overflow: 'visible'
+              }}
+              lineNumberStyle={{
+                userSelect: 'none',
+                minWidth: '35px',
+                paddingRight: '10px',
+                fontSize: '12px',
+                textAlign: 'right',
+                color: '#6b7280',
+                borderRight: '1px solid #374151',
+                marginRight: '10px'
+              }}
+              codeTagProps={{
+                style: {
+                  fontSize: '13px',
+                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                  lineHeight: '1.4',
+                  whiteSpace: 'pre',
+                  wordBreak: 'normal',
+                  overflowWrap: 'normal'
+                }
+              }}
+              wrapLines={false}
+              wrapLongLines={false}
+            >
+              {processedValue}
+            </SyntaxHighlighter>
+          </div>
+        </div>
+      </div>
+    )
+  } catch (error) {
+    console.error('SyntaxHighlighter error:', error)
+    return renderFallback()
+  }
 })
+
 CodeBlock.displayName = 'CodeBlock'
 
 export { CodeBlock }

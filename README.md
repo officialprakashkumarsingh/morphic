@@ -404,7 +404,8 @@ Create a `.env.local` file with:
 NEXT_PUBLIC_SUPABASE_URL=https://pxmhiaxrivtlkrjrqmkb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bWhpYXhyaXZ0bGtyanJxbWtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDk1MzQsImV4cCI6MjA2OTIyNTUzNH0.0x9HweD2DCZcGSso0Xx5v1AAgpWvC_ZZO9THBzRovTs
 
-# Chat History (Required for chat functionality)
+# Chat History (Required for authenticated users to save chat history)
+# Note: Anonymous users can chat but won't have persistent chat history
 ENABLE_SAVE_CHAT_HISTORY=true
 
 # AI Models (Optional)
@@ -456,12 +457,13 @@ The app supports Progressive Web App features:
 
 - **Multi-session chat management**
 - **Auto-generated chat titles** from last user message
-- **Chat history with search**
+- **Chat history with search** (for authenticated users)
 - **Pin important chats**
 - **Rename and delete chats**
 - **Share chats publicly**
 - **Real-time message sync**
 - **User-specific chat isolation**
+- **Anonymous chat support** (no persistent history)
 
 ## 📊 User Analytics
 

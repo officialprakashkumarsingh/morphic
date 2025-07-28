@@ -71,6 +71,12 @@ export async function handleStreamFinish({
       return
     }
 
+    // Skip saving for anonymous users (they can chat but don't get persistent history)
+    if (userId === 'anonymous') {
+      console.log('Skipping chat history save for anonymous user')
+      return
+    }
+
     // Get the chat from the database if it exists, otherwise create a new one
     const savedChat = (await getChat(chatId, userId)) ?? {
       messages: [],
@@ -82,7 +88,6 @@ export async function handleStreamFinish({
     }
 
     // Save chat with complete response and related questions
-    console.log('Attempting to save chat with userId:', userId)
     await saveChat(
       {
         ...savedChat,

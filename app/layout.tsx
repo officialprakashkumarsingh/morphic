@@ -3,7 +3,6 @@ import { Inter as FontSans, Lobster } from 'next/font/google'
 
 import { Analytics } from '@vercel/analytics/next'
 
-
 import { cn } from '@/lib/utils'
 
 import { SidebarProvider } from '@/components/ui/sidebar'

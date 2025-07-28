@@ -67,15 +67,8 @@ export async function handleStreamFinish({
       ...responseMessages.slice(-1)
     ] as ExtendedCoreMessage[]
 
-    if (process.env.ENABLE_SAVE_CHAT_HISTORY !== 'true') {
-      return
-    }
-
-    // Skip saving for anonymous users (they can chat but don't get persistent history)
-    if (userId === 'anonymous') {
-      console.log('Skipping chat history save for anonymous user')
-      return
-    }
+    // Chat history saving is disabled
+    return
 
     // Get the chat from the database if it exists, otherwise create a new one
     const savedChat = (await getChat(chatId, userId)) ?? {

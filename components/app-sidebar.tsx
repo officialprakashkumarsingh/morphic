@@ -10,8 +10,6 @@ import {
   SidebarMenuItem
 } from '@/components/ui/sidebar'
 
-import { ChatHistory } from './chat-history'
-
 export default async function AppSidebar() {
   return (
     <Sidebar className="border-r">
@@ -20,25 +18,8 @@ export default async function AppSidebar() {
       </SidebarHeader>
       
       <SidebarContent className="flex flex-col h-full">
-        {/* Chat History */}
-        <div className="flex-1 overflow-hidden">
-          <Suspense
-            fallback={
-              <div className="p-4">
-                <div className="space-y-2">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
-                  ))}
-                </div>
-              </div>
-            }
-          >
-            <ChatHistory />
-          </Suspense>
-        </div>
-
         {/* Navigation Menu */}
-        <div className="p-2 border-t">
+        <div className="p-2">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
@@ -49,8 +30,8 @@ export default async function AppSidebar() {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href="/profile">
-                  <span>Profile</span>
+                <Link href="/search">
+                  <span>New Chat</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

@@ -6,8 +6,8 @@ A powerful AI assistant with comprehensive tools for productivity, analysis, and
 
 - **Multi-modal AI Chat** - Intelligent conversations with various AI models
 - **Tool Integration** - Stock analysis, crypto tracking, diagrams, presentations
-- **User Authentication** - Secure login with Supabase
-- **Chat Management** - Multi-session chats with history, pinning, renaming
+- **Simple & Clean** - No authentication required, just start chatting
+- **AI-Powered** - Multiple AI models and intelligent responses
 - **User Analytics** - Comprehensive user activity tracking
 - **PWA Support** - Install as a native app experience
 - **Mobile Optimized** - Responsive design for all devices
@@ -445,31 +445,20 @@ The app supports Progressive Web App features:
 - **Push notifications** (coming soon)
 - **Background sync**
 
-## 🔐 Authentication Features
-
-- **Email/Password registration and login**
-- **Google OAuth integration**
-- **Password reset functionality**
-- **User profile management**
-- **Secure session management**
-
 ## 💬 Chat Features
 
-- **Multi-session chat management**
-- **Auto-generated chat titles** from last user message
-- **Chat history with search** (for authenticated users)
-- **Pin important chats**
-- **Rename and delete chats**
-- **Share chats publicly**
-- **Real-time message sync**
-- **User-specific chat isolation**
-- **Anonymous chat support** (no persistent history)
+- **Real-time AI chat** with multiple AI models
+- **No registration required** - start chatting immediately
+- **Multi-model support** (OpenAI, Anthropic, Google, etc.)
+- **Web search integration** for up-to-date information
+- **Clean, modern interface**
+- **Responsive design** for all devices
 
-## 📊 User Analytics
+## 🌟 Key Features
 
-Track comprehensive user activity:
-- **Total messages sent**
-- **Chat sessions created**
+AhamAI provides a streamlined chat experience:
+- **Instant access** - No signup required
+- **Multiple AI models** - Choose from various providers
 - **Tools usage statistics**
 - **Favorite tools analysis**
 - **Usage patterns and insights**

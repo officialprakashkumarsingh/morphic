@@ -195,6 +195,7 @@ export async function saveChat(chat: Chat, userId: string = 'anonymous') {
       user_id: user.id,
       title,
       messages: chat.messages || [],
+      is_pinned: false, // Default to false for new chats
       share_path: chat.sharePath || null,
       created_at: chat.createdAt || new Date(),
       updated_at: new Date()
@@ -210,6 +211,13 @@ export async function saveChat(chat: Chat, userId: string = 'anonymous') {
 
     if (error) {
       console.error('Error saving chat:', error)
+      console.error('Supabase error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      })
+      console.error('Chat data being saved:', JSON.stringify(chatData, null, 2))
       throw new Error('Failed to save chat')
     }
 

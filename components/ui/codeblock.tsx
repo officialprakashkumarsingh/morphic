@@ -53,12 +53,28 @@ export const programmingLanguages: languageMap = {
 const CodeBlock: FC<Props> = memo(({ language, value }) => {
   const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 })
 
-  // Memoize the processed value to prevent re-processing on every render
+  // Aggressive truncation to prevent freezing
   const processedValue = useMemo(() => {
     if (!value) return ''
-    // Limit the length to prevent freezing
-    const maxLength = 10000 // Limit to 10k characters
-    return value.length > maxLength ? value.substring(0, maxLength) + '\n... [Code truncated for performance]' : value
+    
+    // More aggressive limits to prevent any freezing
+    const maxLength = 5000 // Reduced to 5k characters
+    const maxLines = 200 // Limit to 200 lines max
+    
+    let processedCode = value
+    
+    // Truncate by character length
+    if (processedCode.length > maxLength) {
+      processedCode = processedCode.substring(0, maxLength) + '\n... [Code truncated - see copy for full content]'
+    }
+    
+    // Truncate by line count
+    const lines = processedCode.split('\n')
+    if (lines.length > maxLines) {
+      processedCode = lines.slice(0, maxLines).join('\n') + '\n... [Lines truncated - see copy for full content]'
+    }
+    
+    return processedCode
   }, [value])
 
   const downloadAsFile = useCallback(() => {
@@ -92,82 +108,86 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   }, [isCopied, copyToClipboard, value])
 
   return (
-    <div className="relative w-full max-w-full font-mono codeblock-container bg-zinc-950 dark:bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 dark:border-zinc-700 my-4 mx-0">
-      <div className="flex items-center justify-between w-full px-3 py-2 bg-zinc-800 dark:bg-zinc-800 text-zinc-100 border-b border-zinc-700">
-        <span className="text-xs font-medium text-zinc-300 truncate pr-2 min-w-0 flex-1">{language || 'text'}</span>
-        <div className="flex items-center space-x-1 flex-shrink-0">
-          <Button
-            variant="ghost"
-            className="focus-visible:ring-1 h-7 w-7 p-0 hover:bg-zinc-700"
-            onClick={downloadAsFile}
-            size="icon"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span className="sr-only">Download</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="focus-visible:ring-1 focus-visible:ring-offset-0 h-7 w-7 p-0 hover:bg-zinc-700"
-            onClick={onCopy}
-          >
-            {isCopied ? (
-              <Check className="w-3.5 h-3.5" />
-            ) : (
-              <Copy className="w-3.5 h-3.5" />
-            )}
-            <span className="sr-only">Copy code</span>
-          </Button>
+    <div className="codeblock-wrapper w-full my-4">
+      <div className="codeblock-container bg-zinc-950 dark:bg-zinc-900 rounded-lg border border-zinc-800 dark:border-zinc-700 overflow-hidden">
+        <div className="flex items-center justify-between px-3 py-2 bg-zinc-800 text-zinc-100 border-b border-zinc-700">
+          <span className="text-xs font-medium text-zinc-300 truncate flex-1 min-w-0 pr-2">
+            {language || 'text'}
+          </span>
+          <div className="flex items-center space-x-1 flex-shrink-0">
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0 hover:bg-zinc-700"
+              onClick={downloadAsFile}
+              size="icon"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="sr-only">Download</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 p-0 hover:bg-zinc-700"
+              onClick={onCopy}
+            >
+              {isCopied ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+              <span className="sr-only">Copy code</span>
+            </Button>
+          </div>
         </div>
-      </div>
-      <div className="relative overflow-hidden max-w-full">
-        <SyntaxHighlighter
-          language={language}
-          style={oneDark}
-          PreTag="div"
-          showLineNumbers
-          customStyle={{
-            margin: 0,
-            width: '100%',
-            minWidth: 0,
-            background: 'transparent',
-            padding: '0.75rem',
-            fontSize: '0.8rem',
-            overflowX: 'auto',
-            maxWidth: '100%',
-            borderRadius: '0',
-            lineHeight: '1.4',
-            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
-          }}
-          lineNumberStyle={{
-            userSelect: 'none',
-            minWidth: '2em',
-            paddingRight: '0.75em',
-            fontSize: '0.75rem',
-            textAlign: 'right',
-            color: '#6b7280',
-            borderRight: '1px solid #374151',
-            marginRight: '0.75em',
-            display: 'inline-block'
-          }}
-          codeTagProps={{
-            style: {
-              fontSize: '0.8rem',
-              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+        <div className="codeblock-content">
+          <SyntaxHighlighter
+            language={language}
+            style={oneDark}
+            PreTag="div"
+            showLineNumbers
+            customStyle={{
+              margin: 0,
+              background: 'transparent',
+              padding: '12px',
+              fontSize: '13px',
               lineHeight: '1.4',
-              wordBreak: 'normal',
-              whiteSpace: 'pre',
-              overflowWrap: 'normal',
-              display: 'block',
+              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+              overflow: 'auto',
+              maxHeight: '500px', // Limit height to prevent huge blocks
               width: '100%',
               minWidth: 0
-            }
-          }}
-          wrapLines={false}
-          wrapLongLines={false}
-        >
-          {processedValue}
-        </SyntaxHighlighter>
+            }}
+            lineNumberStyle={{
+              userSelect: 'none',
+              minWidth: '40px',
+              paddingRight: '12px',
+              fontSize: '12px',
+              textAlign: 'right',
+              color: '#6b7280',
+              borderRight: '1px solid #374151',
+              marginRight: '12px',
+              display: 'inline-block',
+              flexShrink: 0
+            }}
+            codeTagProps={{
+              style: {
+                fontSize: '13px',
+                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                lineHeight: '1.4',
+                whiteSpace: 'pre',
+                wordBreak: 'normal',
+                overflowWrap: 'normal',
+                display: 'block',
+                width: 'max-content',
+                minWidth: '100%'
+              }
+            }}
+            wrapLines={false}
+            wrapLongLines={false}
+          >
+            {processedValue}
+          </SyntaxHighlighter>
+        </div>
       </div>
     </div>
   )

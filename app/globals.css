@@ -284,68 +284,72 @@ body {
       @apply space-y-2;
     }
     
-    /* Code block mobile optimization */
-    .codeblock-container {
-      max-width: calc(100vw - 2rem) !important;
-      min-width: 0 !important;
-      width: 100% !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
-      box-sizing: border-box !important;
-    }
-    
-    .codeblock-container > div {
+    /* Code block mobile optimization - Complete rewrite for proper scrolling */
+    .codeblock-wrapper {
       max-width: 100% !important;
       min-width: 0 !important;
+      overflow: hidden !important;
     }
     
-    .codeblock-container pre {
-      overflow-x: auto !important;
-      white-space: pre !important;
-      word-wrap: normal !important;
+    .codeblock-container {
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+      background: #0a0a0a !important;
+    }
+    
+    .codeblock-content {
+      overflow: auto !important;
       max-width: 100% !important;
       min-width: 0 !important;
       scrollbar-width: thin;
-      scrollbar-color: #4b5563 #1f2937;
-      font-size: 0.75rem !important;
-      padding: 0.5rem !important;
+      scrollbar-color: #4b5563 #0a0a0a;
     }
     
-    .codeblock-container pre::-webkit-scrollbar {
-      height: 6px;
+    .codeblock-content::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
     }
     
-    .codeblock-container pre::-webkit-scrollbar-track {
-      background: #1f2937;
+    .codeblock-content::-webkit-scrollbar-track {
+      background: #0a0a0a;
     }
     
-    .codeblock-container pre::-webkit-scrollbar-thumb {
+    .codeblock-content::-webkit-scrollbar-thumb {
       background: #4b5563;
-      border-radius: 3px;
+      border-radius: 4px;
     }
     
-    .codeblock-container pre::-webkit-scrollbar-thumb:hover {
+    .codeblock-content::-webkit-scrollbar-thumb:hover {
       background: #6b7280;
     }
     
-    .codeblock-container code {
-      word-break: normal !important;
+    .codeblock-content pre {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      overflow: visible !important;
       white-space: pre !important;
-      overflow-wrap: normal !important;
-      display: block !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      font-size: 0.75rem !important;
+      word-wrap: normal !important;
+      min-width: max-content !important;
     }
     
-    .codeblock-container .token {
+    .codeblock-content code {
+      white-space: pre !important;
       word-break: normal !important;
-      font-size: 0.75rem !important;
+      overflow-wrap: normal !important;
+      min-width: max-content !important;
+      display: inline-block !important;
     }
     
-    .codeblock-container span[style] {
-      max-width: 100% !important;
-      min-width: 0 !important;
+    .codeblock-content .token {
+      white-space: pre !important;
+      word-break: normal !important;
+    }
+    
+    /* Override any library styles that might interfere */
+    .codeblock-content * {
+      max-width: none !important;
     }
     
     /* Button responsiveness */
@@ -406,24 +410,16 @@ body {
     }
     
     /* Extra small screen optimizations */
+    .codeblock-wrapper {
+      margin: 0.5rem 0 !important;
+    }
+    
     .codeblock-container {
-      max-width: calc(100vw - 0.5rem) !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
       border-radius: 0.5rem !important;
     }
     
-    .codeblock-container pre {
-      padding: 0.5rem !important;
-      font-size: 0.7rem !important;
-    }
-    
-    .codeblock-container code {
-      font-size: 0.7rem !important;
-    }
-    
-    .codeblock-container .token {
-      font-size: 0.7rem !important;
+    .codeblock-content {
+      font-size: 12px !important;
     }
     
     /* Improved prose spacing on mobile */

@@ -171,7 +171,7 @@ export async function clearChats() {
 export async function saveChat(chat: Chat, userId: string = 'anonymous') {
   const user = await getCurrentUser()
   if (!user) {
-    return { error: 'Unauthorized' }
+    throw new Error('Unauthorized - user not authenticated')
   }
 
   try {

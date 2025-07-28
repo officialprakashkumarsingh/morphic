@@ -82,6 +82,7 @@ export async function handleStreamFinish({
     }
 
     // Save chat with complete response and related questions
+    console.log('Attempting to save chat with userId:', userId)
     await saveChat(
       {
         ...savedChat,

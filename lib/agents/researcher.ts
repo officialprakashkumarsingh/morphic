@@ -2,6 +2,7 @@ import { openai } from '@ai-sdk/openai'
 
 import { createCryptoTool } from '../tools/crypto'
 import { createDiagramTool } from '../tools/diagram'
+import { createQuestionTool } from '../tools/question'
 import { retrieveTool } from '../tools/retrieve'
 import { createSearchTool } from '../tools/search'
 import { createStockTool } from '../tools/stock'
@@ -17,6 +18,7 @@ export const tools = {
   search: createSearchTool(DEFAULT_MODEL),
   retrieve: retrieveTool,
   videoSearch: createVideoSearchTool(DEFAULT_MODEL),
+  question: createQuestionTool(DEFAULT_MODEL),
   diagram: createDiagramTool(DEFAULT_MODEL),
   stock: createStockTool(),
   crypto: createCryptoTool(),

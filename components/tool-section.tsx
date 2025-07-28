@@ -6,6 +6,7 @@ import type { ToolInvocation } from 'ai'
 
 import { CryptoSection } from './crypto-section'
 import { DiagramSection } from './diagram-section'
+import { QuestionSection } from './question-section'
 import { SearchSection } from './search-section'
 import { StockSection } from './stock-section'
 import { UserKnowledgeSection } from './user-knowledge-section'
@@ -19,11 +20,15 @@ export const ToolSection = memo(({ tool }: ToolSectionProps) => {
   switch (tool.toolName) {
     case 'search':
       return (
-        <SearchSection tool={tool} />
+        <SearchSection tool={tool} isOpen={true} onOpenChange={() => {}} />
       )
     case 'videoSearch':
       return (
-        <VideoSearchSection tool={tool} />
+        <VideoSearchSection tool={tool} isOpen={true} onOpenChange={() => {}} />
+      )
+    case 'question':
+      return (
+        <QuestionSection tool={tool} />
       )
     case 'diagram':
       return (

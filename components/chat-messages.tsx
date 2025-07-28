@@ -125,10 +125,10 @@ export function ChatMessages({
       aria-roledescription="chat messages"
       className={cn(
         'relative size-full pt-14',
-        sections.length > 0 ? 'flex-1 overflow-y-auto' : ''
+        sections.length > 0 ? 'flex-1 overflow-y-auto overflow-x-hidden' : ''
       )}
     >
-      <div className="relative mx-auto w-full max-w-3xl px-4">
+      <div className="relative mx-auto w-full max-w-3xl px-4 min-w-0">
         {sections.map((section, sectionIndex) => (
           <div
             key={section.id}

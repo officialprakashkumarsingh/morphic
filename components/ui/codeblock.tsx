@@ -3,7 +3,7 @@
 
 'use client'
 
-import { FC, memo } from 'react'
+import { FC, memo, useCallback, useMemo } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
@@ -53,7 +53,31 @@ export const programmingLanguages: languageMap = {
 const CodeBlock: FC<Props> = memo(({ language, value }) => {
   const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 })
 
-  const downloadAsFile = () => {
+  // Aggressive truncation to prevent freezing
+  const processedValue = useMemo(() => {
+    if (!value) return ''
+    
+    // More aggressive limits to prevent any freezing
+    const maxLength = 3000 // Further reduced to 3k characters
+    const maxLines = 150 // Limit to 150 lines max
+    
+    let processedCode = value
+    
+    // Truncate by character length
+    if (processedCode.length > maxLength) {
+      processedCode = processedCode.substring(0, maxLength) + '\n... [Code truncated - see copy for full content]'
+    }
+    
+    // Truncate by line count
+    const lines = processedCode.split('\n')
+    if (lines.length > maxLines) {
+      processedCode = lines.slice(0, maxLines).join('\n') + '\n... [Lines truncated - see copy for full content]'
+    }
+    
+    return processedCode
+  }, [value])
+
+  const downloadAsFile = useCallback(() => {
     if (typeof window === 'undefined') {
       return
     }
@@ -76,80 +100,140 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-  }
+  }, [language, value])
 
-  const onCopy = () => {
+  const onCopy = useCallback(() => {
     if (isCopied) return
     copyToClipboard(value)
-  }
+  }, [isCopied, copyToClipboard, value])
 
-  return (
-    <div className="relative w-full font-sans codeblock bg-neutral-800 max-w-full overflow-hidden">
-      <div className="flex items-center justify-between w-full px-3 sm:px-6 py-1 pr-2 sm:pr-4 bg-neutral-700 text-zinc-100">
-        <span className="text-xs lowercase truncate">{language}</span>
-        <div className="flex items-center space-x-1">
-          <Button
-            variant="ghost"
-            className="focus-visible:ring-1 h-6 w-6 sm:h-8 sm:w-8"
-            onClick={downloadAsFile}
-            size="icon"
-          >
-            <Download className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="sr-only">Download</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-xs focus-visible:ring-1 focus-visible:ring-offset-0 h-6 w-6 sm:h-8 sm:w-8"
-            onClick={onCopy}
-          >
-            {isCopied ? (
-              <Check className="w-3 h-3 sm:w-4 sm:h-4" />
-            ) : (
-              <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
-            )}
-            <span className="sr-only">Copy code</span>
-          </Button>
+  // Fallback to simple pre/code if SyntaxHighlighter fails
+  const renderFallback = () => (
+    <div className="w-full my-4 max-w-full overflow-hidden">
+      <div className="bg-zinc-950 rounded-lg border border-zinc-800 overflow-hidden">
+        <div className="flex items-center justify-between px-3 py-2 bg-zinc-800 text-zinc-100 border-b border-zinc-700">
+          <span className="text-xs font-medium text-zinc-300 truncate flex-1 min-w-0 pr-2">
+            {language || 'text'}
+          </span>
+          <div className="flex items-center space-x-1 flex-shrink-0">
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0 hover:bg-zinc-700"
+              onClick={downloadAsFile}
+              size="icon"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="sr-only">Download</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 p-0 hover:bg-zinc-700"
+              onClick={onCopy}
+            >
+              {isCopied ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+              <span className="sr-only">Copy code</span>
+            </Button>
+          </div>
+        </div>
+        <div className="overflow-auto max-w-full max-h-96 p-3 bg-zinc-950">
+          <pre className="text-sm font-mono text-zinc-100 whitespace-pre overflow-x-auto">
+            <code>{processedValue}</code>
+          </pre>
         </div>
       </div>
-      <SyntaxHighlighter
-        language={language}
-        style={oneDark}
-        PreTag="div"
-        showLineNumbers
-        customStyle={{
-          margin: 0,
-          width: '100%',
-          background: 'transparent',
-          padding: '0.75rem',
-          fontSize: '0.85rem',
-          overflowX: 'auto',
-          maxWidth: '100%',
-          borderRadius: '0',
-          lineHeight: '1.4'
-        }}
-        lineNumberStyle={{
-          userSelect: 'none',
-          minWidth: '3em',
-          paddingRight: '1em',
-          fontSize: '0.8rem',
-          textAlign: 'right'
-        }}
-        codeTagProps={{
-          style: {
-            fontSize: '0.85rem',
-            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-            lineHeight: '1.4'
-          }
-        }}
-        wrapLines={false}
-        wrapLongLines={false}
-      >
-        {value}
-      </SyntaxHighlighter>
     </div>
   )
+
+  try {
+    return (
+      <div className="w-full my-4 max-w-full overflow-hidden">
+        <div className="bg-zinc-950 rounded-lg border border-zinc-800 overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 bg-zinc-800 text-zinc-100 border-b border-zinc-700">
+            <span className="text-xs font-medium text-zinc-300 truncate flex-1 min-w-0 pr-2">
+              {language || 'text'}
+            </span>
+            <div className="flex items-center space-x-1 flex-shrink-0">
+              <Button
+                variant="ghost"
+                className="h-7 w-7 p-0 hover:bg-zinc-700"
+                onClick={downloadAsFile}
+                size="icon"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="sr-only">Download</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 p-0 hover:bg-zinc-700"
+                onClick={onCopy}
+              >
+                {isCopied ? (
+                  <Check className="w-3.5 h-3.5" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+                <span className="sr-only">Copy code</span>
+              </Button>
+            </div>
+          </div>
+          <div className="overflow-auto max-w-full max-h-96">
+            <SyntaxHighlighter
+              language={language}
+              style={oneDark}
+              PreTag="div"
+              showLineNumbers
+              customStyle={{
+                margin: 0,
+                background: 'transparent',
+                padding: '12px',
+                fontSize: '13px',
+                lineHeight: '1.4',
+                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                width: '100%',
+                minWidth: 0,
+                overflow: 'visible'
+              }}
+              lineNumberStyle={{
+                userSelect: 'none',
+                minWidth: '35px',
+                paddingRight: '10px',
+                fontSize: '12px',
+                textAlign: 'right',
+                color: '#6b7280',
+                borderRight: '1px solid #374151',
+                marginRight: '10px'
+              }}
+              codeTagProps={{
+                style: {
+                  fontSize: '13px',
+                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                  lineHeight: '1.4',
+                  whiteSpace: 'pre',
+                  wordBreak: 'normal',
+                  overflowWrap: 'normal'
+                }
+              }}
+              wrapLines={false}
+              wrapLongLines={false}
+            >
+              {processedValue}
+            </SyntaxHighlighter>
+          </div>
+        </div>
+      </div>
+    )
+  } catch (error) {
+    console.error('SyntaxHighlighter error:', error)
+    return renderFallback()
+  }
 })
+
 CodeBlock.displayName = 'CodeBlock'
 
 export { CodeBlock }

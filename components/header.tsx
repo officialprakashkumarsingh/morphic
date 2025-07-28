@@ -11,7 +11,6 @@ import {
 
 import { cn } from '@/lib/utils'
 
-import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -23,6 +22,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
 
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'

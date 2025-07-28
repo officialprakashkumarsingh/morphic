@@ -6,8 +6,8 @@ A powerful AI assistant with comprehensive tools for productivity, analysis, and
 
 - **Multi-modal AI Chat** - Intelligent conversations with various AI models
 - **Tool Integration** - Stock analysis, crypto tracking, diagrams, presentations
-- **User Authentication** - Secure login with Supabase
-- **Chat Management** - Multi-session chats with history, pinning, renaming
+- **Simple & Clean** - No authentication required, just start chatting
+- **AI-Powered** - Multiple AI models and intelligent responses
 - **User Analytics** - Comprehensive user activity tracking
 - **PWA Support** - Install as a native app experience
 - **Mobile Optimized** - Responsive design for all devices
@@ -404,7 +404,8 @@ Create a `.env.local` file with:
 NEXT_PUBLIC_SUPABASE_URL=https://pxmhiaxrivtlkrjrqmkb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bWhpYXhyaXZ0bGtyanJxbWtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDk1MzQsImV4cCI6MjA2OTIyNTUzNH0.0x9HweD2DCZcGSso0Xx5v1AAgpWvC_ZZO9THBzRovTs
 
-# Chat History (Required for chat functionality)
+# Chat History (Required for authenticated users to save chat history)
+# Note: Anonymous users can chat but won't have persistent chat history
 ENABLE_SAVE_CHAT_HISTORY=true
 
 # AI Models (Optional)
@@ -444,30 +445,20 @@ The app supports Progressive Web App features:
 - **Push notifications** (coming soon)
 - **Background sync**
 
-## 🔐 Authentication Features
-
-- **Email/Password registration and login**
-- **Google OAuth integration**
-- **Password reset functionality**
-- **User profile management**
-- **Secure session management**
-
 ## 💬 Chat Features
 
-- **Multi-session chat management**
-- **Auto-generated chat titles** from last user message
-- **Chat history with search**
-- **Pin important chats**
-- **Rename and delete chats**
-- **Share chats publicly**
-- **Real-time message sync**
-- **User-specific chat isolation**
+- **Real-time AI chat** with multiple AI models
+- **No registration required** - start chatting immediately
+- **Multi-model support** (OpenAI, Anthropic, Google, etc.)
+- **Web search integration** for up-to-date information
+- **Clean, modern interface**
+- **Responsive design** for all devices
 
-## 📊 User Analytics
+## 🌟 Key Features
 
-Track comprehensive user activity:
-- **Total messages sent**
-- **Chat sessions created**
+AhamAI provides a streamlined chat experience:
+- **Instant access** - No signup required
+- **Multiple AI models** - Choose from various providers
 - **Tools usage statistics**
 - **Favorite tools analysis**
 - **Usage patterns and insights**

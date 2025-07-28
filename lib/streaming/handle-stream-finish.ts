@@ -67,9 +67,8 @@ export async function handleStreamFinish({
       ...responseMessages.slice(-1)
     ] as ExtendedCoreMessage[]
 
-    if (process.env.ENABLE_SAVE_CHAT_HISTORY !== 'true') {
-      return
-    }
+    // Chat history saving is disabled
+    return
 
     // Get the chat from the database if it exists, otherwise create a new one
     const savedChat = (await getChat(chatId, userId)) ?? {
@@ -90,6 +89,12 @@ export async function handleStreamFinish({
       userId
     ).catch(error => {
       console.error('Failed to save chat:', error)
+      console.error('Chat data:', JSON.stringify({
+        id: chatId,
+        userId,
+        messagesCount: generatedMessages.length,
+        savedChatId: savedChat.id
+      }, null, 2))
       throw new Error('Failed to save chat history')
     })
   } catch (error) {

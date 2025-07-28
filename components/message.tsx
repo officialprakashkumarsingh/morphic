@@ -20,13 +20,19 @@ export function BotMessage({
   message: string
   className?: string
 }) {
+  // Limit message length to prevent UI freezing
+  const maxLength = 50000 // 50k characters limit
+  const truncatedMessage = message && message.length > maxLength 
+    ? message.substring(0, maxLength) + '\n\n[Message truncated for performance. Full content available via copy.]'
+    : message || ''
+
   // Check if the content contains LaTeX patterns
   const containsLaTeX = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)/.test(
-    message || ''
+    truncatedMessage
   )
 
   // Modify the content to render LaTeX equations if LaTeX patterns are found
-  const processedData = preprocessLaTeX(message || '')
+  const processedData = preprocessLaTeX(truncatedMessage)
 
   if (containsLaTeX) {
     return (
@@ -51,7 +57,7 @@ export function BotMessage({
       rehypePlugins={[[rehypeExternalLinks, { target: '_blank' }]]}
       remarkPlugins={[remarkGfm]}
       className={cn(
-        'prose-sm prose-neutral prose-a:text-accent-foreground/50',
+        'prose-sm prose-neutral prose-a:text-accent-foreground/50 w-full min-w-0',
         className
       )}
       components={{
@@ -88,7 +94,7 @@ export function BotMessage({
         a: Citing
       }}
     >
-      {message}
+      {truncatedMessage}
     </MemoizedReactMarkdown>
   )
 }

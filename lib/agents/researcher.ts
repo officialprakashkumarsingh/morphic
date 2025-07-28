@@ -3,7 +3,6 @@ import { openai } from '@ai-sdk/openai'
 import { createCryptoTool } from '../tools/crypto'
 import { createDiagramTool } from '../tools/diagram'
 import { createPresentationTool } from '../tools/presentation'
-import { createScreenshotTool } from '../tools/screenshot'
 import { createStockTool } from '../tools/stock'
 import { createUserKnowledgeTool } from '../tools/user-knowledge'
 import { getModel } from '../utils/registry'
@@ -15,7 +14,6 @@ const DEFAULT_MODEL = 'openai-compatible:claude-3.5-sonnet'
 export const tools = {
   diagram: createDiagramTool(DEFAULT_MODEL),
   presentation: createPresentationTool(DEFAULT_MODEL),
-  screenshot: createScreenshotTool(DEFAULT_MODEL),
   stock: createStockTool(),
   crypto: createCryptoTool(),
   userKnowledge: createUserKnowledgeTool()

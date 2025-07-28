@@ -21,7 +21,7 @@ export const ToolBadge: React.FC<ToolBadgeProps> = ({
     videoSearch: <Film size={14} />,
     diagram: <Workflow size={14} />,
     chart: <BarChart3 size={14} />,
-    screenshot: <Camera size={14} />
+  
   }
 
   return (

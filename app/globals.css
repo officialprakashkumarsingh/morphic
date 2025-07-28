@@ -287,8 +287,16 @@ body {
     /* Code block mobile optimization */
     .codeblock-container {
       max-width: calc(100vw - 2rem) !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
+      min-width: 0 !important;
+      width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      box-sizing: border-box !important;
+    }
+    
+    .codeblock-container > div {
+      max-width: 100% !important;
+      min-width: 0 !important;
     }
     
     .codeblock-container pre {
@@ -296,12 +304,15 @@ body {
       white-space: pre !important;
       word-wrap: normal !important;
       max-width: 100% !important;
+      min-width: 0 !important;
       scrollbar-width: thin;
       scrollbar-color: #4b5563 #1f2937;
+      font-size: 0.75rem !important;
+      padding: 0.5rem !important;
     }
     
     .codeblock-container pre::-webkit-scrollbar {
-      height: 8px;
+      height: 6px;
     }
     
     .codeblock-container pre::-webkit-scrollbar-track {
@@ -310,7 +321,7 @@ body {
     
     .codeblock-container pre::-webkit-scrollbar-thumb {
       background: #4b5563;
-      border-radius: 4px;
+      border-radius: 3px;
     }
     
     .codeblock-container pre::-webkit-scrollbar-thumb:hover {
@@ -321,10 +332,20 @@ body {
       word-break: normal !important;
       white-space: pre !important;
       overflow-wrap: normal !important;
+      display: block !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      font-size: 0.75rem !important;
     }
     
     .codeblock-container .token {
       word-break: normal !important;
+      font-size: 0.75rem !important;
+    }
+    
+    .codeblock-container span[style] {
+      max-width: 100% !important;
+      min-width: 0 !important;
     }
     
     /* Button responsiveness */
@@ -342,11 +363,14 @@ body {
       overflow-wrap: break-word;
       word-wrap: break-word;
       hyphens: auto;
+      max-width: 100%;
+      min-width: 0;
     }
     
     .prose pre {
       overflow-x: auto;
       max-width: 100%;
+      min-width: 0;
     }
     
     .prose code:not(pre code) {
@@ -358,6 +382,22 @@ body {
       background-color: rgb(39 39 42 / 0.5);
       border: 1px solid rgb(63 63 70 / 0.3);
     }
+    
+    /* Global container constraints */
+    .chat-section {
+      max-width: 100%;
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+    
+    /* Prevent horizontal overflow */
+    * {
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      overflow-x: hidden;
+    }
   }
   
   @media (max-width: 480px) {
@@ -367,13 +407,23 @@ body {
     
     /* Extra small screen optimizations */
     .codeblock-container {
-      max-width: calc(100vw - 1rem) !important;
+      max-width: calc(100vw - 0.5rem) !important;
       margin-left: 0 !important;
       margin-right: 0 !important;
+      border-radius: 0.5rem !important;
     }
     
     .codeblock-container pre {
-      padding: 0.75rem !important;
+      padding: 0.5rem !important;
+      font-size: 0.7rem !important;
+    }
+    
+    .codeblock-container code {
+      font-size: 0.7rem !important;
+    }
+    
+    .codeblock-container .token {
+      font-size: 0.7rem !important;
     }
     
     /* Improved prose spacing on mobile */

@@ -6,7 +6,6 @@ import type { ToolInvocation } from 'ai'
 
 import { CryptoSection } from './crypto-section'
 import { DiagramSection } from './diagram-section'
-import { ScreenshotSection } from './screenshot-section'
 import { StockSection } from './stock-section'
 import { UserKnowledgeSection } from './user-knowledge-section'
 
@@ -20,10 +19,7 @@ export const ToolSection = memo(({ tool }: ToolSectionProps) => {
       return (
         <DiagramSection tool={tool} />
       )
-    case 'screenshot':
-      return (
-        <ScreenshotSection tool={tool} />
-      )
+
     case 'stock':
       return (
         <StockSection tool={tool} />

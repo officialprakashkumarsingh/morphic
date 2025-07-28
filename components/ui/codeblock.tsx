@@ -3,7 +3,7 @@
 
 'use client'
 
-import { FC, memo } from 'react'
+import { FC, memo, useCallback, useMemo } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
@@ -53,7 +53,15 @@ export const programmingLanguages: languageMap = {
 const CodeBlock: FC<Props> = memo(({ language, value }) => {
   const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 })
 
-  const downloadAsFile = () => {
+  // Memoize the processed value to prevent re-processing on every render
+  const processedValue = useMemo(() => {
+    if (!value) return ''
+    // Limit the length to prevent freezing
+    const maxLength = 10000 // Limit to 10k characters
+    return value.length > maxLength ? value.substring(0, maxLength) + '\n... [Code truncated for performance]' : value
+  }, [value])
+
+  const downloadAsFile = useCallback(() => {
     if (typeof window === 'undefined') {
       return
     }
@@ -76,17 +84,17 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-  }
+  }, [language, value])
 
-  const onCopy = () => {
+  const onCopy = useCallback(() => {
     if (isCopied) return
     copyToClipboard(value)
-  }
+  }, [isCopied, copyToClipboard, value])
 
   return (
-    <div className="relative w-full font-mono codeblock-container bg-zinc-950 dark:bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 dark:border-zinc-700 my-4">
+    <div className="relative w-full max-w-full font-mono codeblock-container bg-zinc-950 dark:bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 dark:border-zinc-700 my-4 mx-0">
       <div className="flex items-center justify-between w-full px-3 py-2 bg-zinc-800 dark:bg-zinc-800 text-zinc-100 border-b border-zinc-700">
-        <span className="text-xs font-medium text-zinc-300 truncate pr-2">{language || 'text'}</span>
+        <span className="text-xs font-medium text-zinc-300 truncate pr-2 min-w-0 flex-1">{language || 'text'}</span>
         <div className="flex items-center space-x-1 flex-shrink-0">
           <Button
             variant="ghost"
@@ -112,7 +120,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           </Button>
         </div>
       </div>
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden max-w-full">
         <SyntaxHighlighter
           language={language}
           style={oneDark}
@@ -121,39 +129,44 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           customStyle={{
             margin: 0,
             width: '100%',
+            minWidth: 0,
             background: 'transparent',
-            padding: '1rem',
-            fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+            padding: '0.75rem',
+            fontSize: '0.8rem',
             overflowX: 'auto',
             maxWidth: '100%',
             borderRadius: '0',
-            lineHeight: '1.5',
+            lineHeight: '1.4',
             fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
           }}
           lineNumberStyle={{
             userSelect: 'none',
-            minWidth: '2.5em',
-            paddingRight: '1em',
-            fontSize: 'clamp(0.7rem, 2.2vw, 0.8rem)',
+            minWidth: '2em',
+            paddingRight: '0.75em',
+            fontSize: '0.75rem',
             textAlign: 'right',
             color: '#6b7280',
             borderRight: '1px solid #374151',
-            marginRight: '1em'
+            marginRight: '0.75em',
+            display: 'inline-block'
           }}
           codeTagProps={{
             style: {
-              fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+              fontSize: '0.8rem',
               fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-              lineHeight: '1.5',
+              lineHeight: '1.4',
               wordBreak: 'normal',
               whiteSpace: 'pre',
-              overflowWrap: 'normal'
+              overflowWrap: 'normal',
+              display: 'block',
+              width: '100%',
+              minWidth: 0
             }
           }}
           wrapLines={false}
           wrapLongLines={false}
         >
-          {value}
+          {processedValue}
         </SyntaxHighlighter>
       </div>
     </div>

@@ -25,6 +25,8 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 function groupModelsByProvider(models: Model[]) {
   return models
     .filter(model => model.enabled)
+    // Filter out image-only models from chat model selection
+    .filter(model => !isImageOnlyModel(model))
     .reduce(
       (groups, model) => {
         const provider = model.provider
@@ -36,6 +38,24 @@ function groupModelsByProvider(models: Model[]) {
       },
       {} as Record<string, Model[]>
     )
+}
+
+function isImageOnlyModel(model: Model): boolean {
+  // Check if model has image capabilities but no chat capabilities
+  if (!model.capabilities || model.capabilities.length === 0) {
+    return false // No capabilities defined, assume it's a chat model
+  }
+  
+  // If it has chat capability, it can be used for chat
+  if (model.capabilities.includes('chat')) {
+    return false
+  }
+  
+  // If it only has image-related capabilities, it's image-only
+  const imageCapabilities = ['image-generation', 'image-editing', 'image-to-video']
+  const hasOnlyImageCapabilities = model.capabilities.every(cap => imageCapabilities.includes(cap))
+  
+  return hasOnlyImageCapabilities
 }
 
 interface ModelSelectorProps {
@@ -95,7 +115,14 @@ export function ModelSelector({ models }: ModelSelectorProps) {
                 height={18}
                 className="bg-white rounded-full border"
               />
-              <span className="text-xs font-medium">{selectedModel.name}</span>
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-medium">{selectedModel.name}</span>
+                {selectedModel.label && (
+                  <span className="text-xs text-muted-foreground">
+                    {selectedModel.label}
+                  </span>
+                )}
+              </div>
               {isReasoningModel(selectedModel.id) && (
                 <Lightbulb size={12} className="text-accent-blue-foreground" />
               )}
@@ -130,9 +157,16 @@ export function ModelSelector({ models }: ModelSelectorProps) {
                           height={18}
                           className="bg-white rounded-full border"
                         />
-                        <span className="text-xs font-medium">
-                          {model.name}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">
+                            {model.name}
+                          </span>
+                          {model.label && (
+                            <span className="text-xs text-muted-foreground">
+                              {model.label}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <Check
                         className={`h-4 w-4 ${

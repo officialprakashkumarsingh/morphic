@@ -6,7 +6,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "gpt-4",
@@ -14,7 +15,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "gpt-5",
@@ -22,7 +24,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "o1",
@@ -30,7 +33,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "o3",
@@ -38,7 +42,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "gemini-2.5-pro",
@@ -46,7 +51,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "gemini-2.5-deep",
@@ -54,7 +60,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "gemini-2.5-flash",
@@ -62,7 +69,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "longcat-chat",
@@ -70,7 +78,8 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["chat"]
     },
     {
       "id": "nano-banana",

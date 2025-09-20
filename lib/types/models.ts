@@ -6,4 +6,6 @@ export interface Model {
   enabled: boolean
   toolCallType: 'native' | 'manual'
   toolCallModel?: string
+  capabilities?: string[]
+  label?: string
 }

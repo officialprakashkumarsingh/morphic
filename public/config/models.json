@@ -78,7 +78,49 @@
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
-      "toolCallType": "native"
+      "toolCallType": "native",
+      "capabilities": ["image-generation", "image-editing"],
+      "label": "Image Generation + Image Editing"
+    },
+    {
+      "id": "imagen-3",
+      "name": "Imagen 3",
+      "provider": "OpenAI Compatible",
+      "providerId": "openai-compatible",
+      "enabled": true,
+      "toolCallType": "native",
+      "capabilities": ["image-generation"],
+      "label": "Image Generation"
+    },
+    {
+      "id": "imagen-3.1",
+      "name": "Imagen 3.1",
+      "provider": "OpenAI Compatible",
+      "providerId": "openai-compatible",
+      "enabled": true,
+      "toolCallType": "native",
+      "capabilities": ["image-generation"],
+      "label": "Image Generation"
+    },
+    {
+      "id": "imagen-3.5",
+      "name": "Imagen 3.5",
+      "provider": "OpenAI Compatible",
+      "providerId": "openai-compatible",
+      "enabled": true,
+      "toolCallType": "native",
+      "capabilities": ["image-generation"],
+      "label": "Image Generation"
+    },
+    {
+      "id": "veo3-image-to-video",
+      "name": "Veo3 Image to Video",
+      "provider": "OpenAI Compatible",
+      "providerId": "openai-compatible",
+      "enabled": true,
+      "toolCallType": "native",
+      "capabilities": ["image-to-video"],
+      "label": "Image to Video"
     }
   ]
 }

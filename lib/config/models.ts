@@ -12,7 +12,11 @@ export function validateModel(model: any): model is Model {
     typeof model.enabled === 'boolean' &&
     (model.toolCallType === 'native' || model.toolCallType === 'manual') &&
     (model.toolCallModel === undefined ||
-      typeof model.toolCallModel === 'string')
+      typeof model.toolCallModel === 'string') &&
+    (model.capabilities === undefined ||
+      Array.isArray(model.capabilities)) &&
+    (model.label === undefined ||
+      typeof model.label === 'string')
   )
 }
 
@@ -51,7 +55,7 @@ export async function getModels(): Promise<Model[]> {
       const config = JSON.parse(text)
       if (Array.isArray(config.models) && config.models.every(validateModel)) {
         console.log('Successfully loaded models from URL')
-        return config.models
+        return config.models as Model[]
       }
     } catch (error: any) {
       // Fallback to default models if fetch fails
@@ -65,7 +69,7 @@ export async function getModels(): Promise<Model[]> {
         defaultModels.models.every(validateModel)
       ) {
         console.log('Successfully loaded default models')
-        return defaultModels.models
+        return defaultModels.models as Model[]
       }
     }
   } catch (error) {

@@ -9,8 +9,8 @@ import { isProviderEnabled } from '@/lib/utils/registry'
 export const maxDuration = 30
 
 const DEFAULT_MODEL: Model = {
-  id: 'claude-3.5-sonnet',
-  name: 'Claude 3.5 Sonnet',
+  id: 'gpt-4o',
+  name: 'GPT-4o',
   provider: 'OpenAI Compatible',
   providerId: 'openai-compatible',
   enabled: true,

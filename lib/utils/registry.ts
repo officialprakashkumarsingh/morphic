@@ -7,8 +7,8 @@ import {
 
 export const registry = createProviderRegistry({
   'openai-compatible': createOpenAI({
-    apiKey: 'ahamaibyprakash25',
-    baseURL: 'https://ahamai-api.officialprakashkrsingh.workers.dev/v1'
+    apiKey: 'pikachu@#25D',
+    baseURL: 'https://longcat-openai-api.onrender.com/v1'
   })
 })
 
@@ -32,7 +32,7 @@ export function isProviderEnabled(providerId: string): boolean {
 
 export function getToolCallModel(model?: string) {
   // Default to a compatible model for tool calls
-  return getModel('openai-compatible:claude-3.5-sonnet')
+  return getModel('openai-compatible:gpt-4o')
 }
 
 export function isToolCallSupported(model?: string) {
@@ -48,6 +48,7 @@ export function isReasoningModel(model: string): boolean {
   return (
     model.includes('deepseek') ||
     model.includes('reasoner') ||
+    model.includes('o1') ||
     model.includes('o3')
   )
 }

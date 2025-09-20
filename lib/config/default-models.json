@@ -1,104 +1,80 @@
 {
   "models": [
     {
-      "id": "claude-4-sonnet",
-      "name": "Claude 4 Sonnet",
+      "id": "gpt-4o",
+      "name": "GPT-4o",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "claude-4-opus",
-      "name": "Claude 4 Opus",
+      "id": "gpt-4",
+      "name": "GPT-4",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "claude-3.7-sonnet",
-      "name": "Claude 3.7 Sonnet",
+      "id": "gpt-5",
+      "name": "GPT-5",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "claude-3.5-sonnet",
-      "name": "Claude 3.5 Sonnet",
+      "id": "o1",
+      "name": "OpenAI o1",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "kimi-k2",
-      "name": "Kimi K2",
+      "id": "o3",
+      "name": "OpenAI o3",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "kimi-k2-instruct",
-      "name": "Kimi K2 Instruct",
+      "id": "gemini-2.5-pro",
+      "name": "Gemini 2.5 Pro",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "grok-3",
-      "name": "Grok 3",
+      "id": "gemini-2.5-deep",
+      "name": "Gemini 2.5 Deep",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "qwen3-coder-480B-A35B-instruct",
-      "name": "Qwen3 Coder 480B A35B Instruct",
+      "id": "gemini-2.5-flash",
+      "name": "Gemini 2.5 Flash",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "deepseek-chat-v3-0324-free",
-      "name": "DeepSeek Chat V3 Free",
+      "id": "longcat-chat",
+      "name": "Longcat Chat",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
       "toolCallType": "native"
     },
     {
-      "id": "sonar",
-      "name": "Sonar",
-      "provider": "OpenAI Compatible",
-      "providerId": "openai-compatible",
-      "enabled": true,
-      "toolCallType": "native"
-    },
-    {
-      "id": "sonar-pro",
-      "name": "Sonar Pro",
-      "provider": "OpenAI Compatible",
-      "providerId": "openai-compatible",
-      "enabled": true,
-      "toolCallType": "native"
-    },
-    {
-      "id": "claude-sonnet-4-2",
-      "name": "Claude Sonnet 4.2",
-      "provider": "OpenAI Compatible",
-      "providerId": "openai-compatible",
-      "enabled": true,
-      "toolCallType": "native"
-    },
-    {
-      "id": "claude-opus-4-2",
-      "name": "Claude Opus 4.2",
+      "id": "nano-banana",
+      "name": "Nano Banana",
       "provider": "OpenAI Compatible",
       "providerId": "openai-compatible",
       "enabled": true,
